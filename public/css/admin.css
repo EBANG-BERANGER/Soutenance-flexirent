@@ -71,11 +71,15 @@ body.fx-admin { background: var(--surface-2); font-size: .92rem; }
 
 @media (max-width: 900px) {
     .fx-admin-shell { flex-direction: column; }
+    /* Slides with transform (GPU) instead of `left`, on an iOS drawer curve,
+       and leaves along the same path it came in. */
     .fx-admin-sidebar {
-        position: fixed; left: -260px; top: 0; bottom: 0; z-index: 50; width: 240px;
-        transition: left .25s ease; box-shadow: var(--shadow-lg);
+        position: fixed; left: 0; top: 0; bottom: 0; z-index: 50; width: 240px;
+        transform: translateX(-105%);
+        transition: transform .32s var(--ease-drawer); box-shadow: var(--shadow-lg);
+        overscroll-behavior: contain;
     }
-    .fx-admin-sidebar.is-open { left: 0; }
+    .fx-admin-sidebar.is-open { transform: translateX(0); }
     .fx-admin-toggle { display: flex; }
     .fx-admin-content { padding: 18px 16px 50px; }
     .fx-admin-topbar { padding: 12px 16px; }
@@ -89,10 +93,12 @@ body.fx-admin { background: var(--surface-2); font-size: .92rem; }
 .btn-admin {
     font-family: var(--font-body); font-weight: 600; font-size: .8rem;
     padding: 6px 13px; border-radius: 6px; border: 1px solid transparent;
-    transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+    transition: background-color var(--dur-fast) ease, border-color var(--dur-fast) ease, color var(--dur-fast) ease, transform var(--dur-press) var(--ease-out);
     line-height: 1.4;
 }
 .btn-admin:hover { transform: none; }
+/* Back-office: crisp and fast, but every press still acknowledged. */
+.btn-admin:active { transform: scale(.97); }
 .btn-admin-primary { background: var(--gold); border-color: var(--gold); color: #fff; }
 .btn-admin-primary:hover { background: var(--gold-deep); border-color: var(--gold-deep); color: #fff; }
 .btn-admin-outline { background: var(--surface); border-color: var(--line); color: var(--text); }
@@ -118,6 +124,7 @@ body.fx-admin { background: var(--surface-2); font-size: .92rem; }
     position: absolute; right: 0; top: calc(100% + 4px); z-index: 20; min-width: 190px;
     background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
     box-shadow: var(--shadow-lg); padding: 5px; display: flex; flex-direction: column; gap: 1px;
+    transform-origin: top right; /* opens out of its "more" button */
 }
 .fx-row-menu-item {
     display: block; width: 100%; text-align: left; background: none; border: none;
@@ -152,5 +159,19 @@ body.fx-admin { background: var(--surface-2); font-size: .92rem; }
 .fx-admin-stat.is-financial .fx-admin-stat-icon { background: #fff8ec; color: var(--gold-deep); }
 [data-theme="night"] .fx-admin-stat.is-financial .fx-admin-stat-icon { background: rgba(199, 150, 44, .18); color: var(--gold); }
 .fx-admin-stat small { display: block; font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 700; }
-.fx-admin-stat h4 { margin: 2px 0 0; font-size: 1.3rem; }
+.fx-admin-stat h4 { margin: 2px 0 0; font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+.fx-admin-content .table td { font-variant-numeric: tabular-nums; }
+
+/* Translucent topbar: tables scroll under it instead of behind a solid strip. */
+.fx-admin-topbar {
+    background: color-mix(in srgb, var(--surface) 82%, transparent);
+    -webkit-backdrop-filter: blur(16px) saturate(160%); backdrop-filter: blur(16px) saturate(160%);
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+    .fx-admin-topbar { background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .fx-admin-sidebar { transition: opacity .2s ease !important; }
+    .btn-admin:active { transform: none; }
+}
 

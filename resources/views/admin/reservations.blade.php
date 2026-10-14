@@ -60,7 +60,7 @@
                         <a href="{{ route('admin.reservations.edit', $r) }}" class="btn btn-admin btn-admin-outline">Edit</a>
                         <div class="fx-row-menu" x-data="{ open: false }" @click.outside="open = false">
                             <button type="button" class="btn btn-admin btn-admin-ghost" @click="open = !open" aria-label="More actions">&hellip;</button>
-                            <div class="fx-row-menu-panel" x-show="open" x-cloak x-transition.duration.120ms>
+                            <div class="fx-row-menu-panel" x-show="open" x-cloak x-transition.origin.top.right.duration.120ms>
                                 @if($r->status === 'confirmed')
                                     <form method="POST" action="{{ route('admin.reservations.suspend', $r) }}" onsubmit="return confirm('Suspend this active rental? The vehicle will show as available again until you resume it.')">
                                         @csrf

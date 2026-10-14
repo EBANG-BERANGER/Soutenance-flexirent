@@ -43,6 +43,14 @@
     --neon-cyan: #D4AF37;
     --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
     --font-body: 'General Sans', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    /* Motion tokens (apple-design + emil-design-eng): strong custom curves
+       instead of the weak built-in `ease`, short UI durations (<300ms). */
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);          /* enter / respond */
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);      /* on-screen movement */
+    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);       /* iOS-like sheet/drawer */
+    --dur-press: 120ms;
+    --dur-fast: 180ms;
+    --dur-base: 240ms;
 }
 
 /* ==========================================================================
@@ -76,15 +84,25 @@ body {
     font-size: 16px;
     line-height: 1.55;
     opacity: 0;
-    animation: fx-page-in .35s ease forwards;
+    animation: fx-page-in .18s var(--ease-out) forwards;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 }
 @keyframes fx-page-in { to { opacity: 1; } }
+/* Size-specific tracking & leading: large type tighter, small type looser. */
 h1, h2, h3, h4, h5, .fx-brand {
     font-family: var(--font-display);
     font-weight: 700;
     letter-spacing: -0.01em;
     color: var(--text);
+    font-optical-sizing: auto;
+    text-wrap: balance;
 }
+h1 { line-height: 1.08; letter-spacing: -0.022em; }
+h2 { line-height: 1.15; letter-spacing: -0.018em; }
+h3 { line-height: 1.2; letter-spacing: -0.012em; }
+h4, h5 { line-height: 1.3; letter-spacing: -0.005em; }
+p { text-wrap: pretty; }
 a { color: var(--text); }
 a:hover { color: var(--gold-deep); }
 ::selection { background: rgba(199, 150, 44, .18); color: var(--text); }
@@ -126,9 +144,15 @@ a:hover { color: var(--gold-deep); }
     padding: 7px 12px;
 }
 
+/* Translucent material: content scrolls under the bar instead of a solid strip. */
 .fx-navbar {
-    background: var(--navy); position: sticky; top: 0; z-index: 40; box-shadow: var(--shadow-sm);
-    transition: box-shadow .25s ease;
+    background: rgba(16, 23, 40, .86); position: sticky; top: 0; z-index: 40; box-shadow: var(--shadow-sm);
+    -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%);
+    border-bottom: 1px solid rgba(255, 255, 255, .06);
+    transition: box-shadow var(--dur-base) var(--ease-out);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .fx-navbar { background: var(--navy); }
 }
 .fx-navbar.is-scrolled { box-shadow: var(--shadow-lg); }
 .fx-navbar-inner {
@@ -181,11 +205,17 @@ a:hover { color: var(--gold-deep); }
     font-weight: 600;
     font-family: var(--font-body);
     padding: 8px 18px;
-    transition: transform .15s ease, box-shadow .2s ease, background-color .15s ease, border-color .15s ease;
+    transition: transform var(--dur-press) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out),
+                background-color var(--dur-fast) ease, border-color var(--dur-fast) ease, color var(--dur-fast) ease;
     border-width: 1.5px;
+    touch-action: manipulation; /* no 300ms tap delay */
+    -webkit-tap-highlight-color: transparent;
 }
-.btn:hover { transform: translateY(-1px); }
-.btn:active { transform: translateY(0) scale(.97); }
+@media (hover: hover) and (pointer: fine) {
+    .btn:hover { transform: translateY(-1px); }
+}
+/* Feedback on press, not on release: instant scale-down. */
+.btn:active { transform: scale(.97); transition-duration: 80ms; }
 
 .btn-gold {
     background: var(--gold);
@@ -199,9 +229,11 @@ a:hover { color: var(--gold-deep); }
 .btn-gold::after {
     content: ''; position: absolute; top: 0; left: -75%; width: 50%; height: 100%;
     background: linear-gradient(115deg, transparent, rgba(255, 255, 255, .4), transparent);
-    transform: skewX(-20deg); transition: left .55s ease; pointer-events: none;
+    transform: skewX(-20deg); transition: left .55s var(--ease-in-out); pointer-events: none;
 }
-.btn-gold:hover::after { left: 125%; }
+@media (hover: hover) and (pointer: fine) {
+    .btn-gold:hover::after { left: 125%; }
+}
 
 .btn-navy {
     background: var(--navy);
@@ -229,20 +261,27 @@ a:hover { color: var(--gold-deep); }
     position: relative; display: block; height: 320px;
     border-radius: var(--radius-md); overflow: hidden;
     box-shadow: var(--shadow-sm); text-decoration: none;
-    transition: transform .35s cubic-bezier(.2, .8, .2, 1), box-shadow .35s ease;
+    transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
+    -webkit-tap-highlight-color: transparent;
 }
-.vehicle-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg), 0 0 0 1px rgba(212, 175, 55, .55), 0 0 34px rgba(212, 175, 55, .4); }
-.vehicle-card img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s cubic-bezier(.2, .8, .2, 1); }
-.vehicle-card:hover img { transform: scale(1.1); }
+.vehicle-card img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .45s var(--ease-out); }
+/* Hover lift only for a real mouse: on touch, hover fires on tap and sticks. */
+@media (hover: hover) and (pointer: fine) {
+    .vehicle-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg), 0 0 0 1px rgba(212, 175, 55, .55), 0 0 34px rgba(212, 175, 55, .4); }
+    .vehicle-card:hover img { transform: scale(1.06); }
+}
+.vehicle-card:active { transform: scale(.985); transition-duration: 80ms; }
 
 /* Light sweep on hover: a glint of light catching the car's paint, reused
    on any card-like surface with a photo or icon (vehicle, category, feature). */
 .vehicle-card::after, .fx-category-card::after, .fx-feature-card::after {
     content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
     background: linear-gradient(115deg, transparent, rgba(255, 255, 255, .38), transparent);
-    transform: skewX(-20deg); transition: left .65s ease; pointer-events: none; z-index: 2;
+    transform: skewX(-20deg); transition: left .65s var(--ease-in-out); pointer-events: none; z-index: 2;
 }
-.vehicle-card:hover::after, .fx-category-card:hover::after, .fx-feature-card:hover::after { left: 130%; }
+@media (hover: hover) and (pointer: fine) {
+    .vehicle-card:hover::after, .fx-category-card:hover::after, .fx-feature-card:hover::after { left: 130%; }
+}
 .vehicle-card-caption {
     position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 16px 14px;
     background: linear-gradient(0deg, rgba(16, 23, 40, .82) 0%, rgba(16, 23, 40, .15) 65%, transparent 100%);
@@ -290,10 +329,14 @@ a:hover { color: var(--gold-deep); }
 }
 .fx-switch-thumb {
     position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%;
-    background: #fff; box-shadow: 0 1px 3px rgba(16, 23, 40, .3); transition: left .2s ease;
+    background: #fff; box-shadow: 0 1px 3px rgba(16, 23, 40, .3);
+    transition: transform var(--dur-fast) var(--ease-out), width var(--dur-press) var(--ease-out); /* transform = GPU, not `left` */
 }
 .fx-switch input:checked + .fx-switch-track { background: var(--ok); }
-.fx-switch input:checked + .fx-switch-track .fx-switch-thumb { left: 20px; }
+.fx-switch input:checked + .fx-switch-track .fx-switch-thumb { transform: translateX(18px); }
+/* iOS-style: the thumb stretches while pressed, acknowledging the touch. */
+.fx-switch:active .fx-switch-thumb { width: 24px; }
+.fx-switch:active input:checked + .fx-switch-track .fx-switch-thumb { transform: translateX(14px); }
 .fx-switch input:focus-visible + .fx-switch-track { outline: 2px solid var(--gold-accent); outline-offset: 2px; }
 
 /* ---------- forms ---------- */
@@ -382,9 +425,11 @@ a:hover { color: var(--gold-deep); }
 .fx-pay-options { display: flex; flex-direction: column; gap: 10px; }
 .fx-pay-option {
     display: flex; align-items: flex-start; gap: 12px; border: 1.5px solid var(--line); border-radius: var(--radius-md);
-    padding: 12px 14px; cursor: pointer; transition: border-color .15s ease, background-color .15s ease;
+    padding: 12px 14px; cursor: pointer;
+    transition: border-color var(--dur-fast) ease, background-color var(--dur-fast) ease, transform var(--dur-press) var(--ease-out);
 }
-.fx-pay-option:hover { border-color: var(--gold); }
+@media (hover: hover) and (pointer: fine) { .fx-pay-option:hover { border-color: var(--gold); } }
+.fx-pay-option:active { transform: scale(.99); }
 .fx-pay-option:has(input:checked) { border-color: var(--gold); background: var(--sun); }
 .fx-pay-option input { margin-top: 4px; accent-color: var(--gold); flex-shrink: 0; }
 
@@ -415,9 +460,14 @@ a:hover { color: var(--gold-deep); }
 .fx-momo-check {
     width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 50%;
     background: var(--ok); color: #fff; font-size: 1.8rem; line-height: 64px;
-    animation: fx-momo-pop .3s ease;
+    animation: fx-momo-pop .4s var(--ease-out);
 }
-@keyframes fx-momo-pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+/* Rare success moment: allowed a touch of delight (slight overshoot). */
+@keyframes fx-momo-pop {
+    0% { transform: scale(.85); opacity: 0; }
+    60% { transform: scale(1.04); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
 @media (prefers-reduced-motion: reduce) {
     .fx-momo-phone-pulse { animation: none; opacity: .35; }
     .fx-momo-check { animation: none; }
@@ -427,7 +477,7 @@ a:hover { color: var(--gold-deep); }
 .fx-spinner {
     display: inline-block; width: 15px; height: 15px; border-radius: 50%;
     border: 2px solid currentColor; border-top-color: transparent; opacity: .85;
-    animation: fx-spin .7s linear infinite; vertical-align: -3px; margin-right: 6px;
+    animation: fx-spin .6s linear infinite; vertical-align: -3px; margin-right: 6px; /* faster spin = feels faster */
 }
 @keyframes fx-spin { to { transform: rotate(360deg); } }
 
@@ -438,17 +488,22 @@ body.fx-leaving { opacity: 0; transition: opacity .15s ease; }
 .fx-chip {
     display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid var(--line);
     background: var(--surface); border-radius: 20px; padding: 6px 14px; font-size: .85rem;
-    cursor: pointer; transition: border-color .15s ease, background-color .15s ease, transform .15s ease;
+    cursor: pointer; transition: border-color var(--dur-fast) ease, background-color var(--dur-fast) ease, transform var(--dur-press) var(--ease-out);
+    touch-action: manipulation;
 }
-.fx-chip:hover { transform: translateY(-1px); border-color: var(--gold); }
+@media (hover: hover) and (pointer: fine) { .fx-chip:hover { transform: translateY(-1px); border-color: var(--gold); } }
+.fx-chip:active { transform: scale(.96); }
 .fx-chip.is-active { background: var(--navy); border-color: var(--navy); color: #fff; }
 
 /* ---------- stat tiles (partner dashboard + admin) ---------- */
 .fx-stat-tile {
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 16px 18px;
-    box-shadow: var(--shadow-sm); height: 100%; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    box-shadow: var(--shadow-sm); height: 100%;
+    transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-fast) ease;
 }
-.fx-stat-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--gold); }
+@media (hover: hover) and (pointer: fine) {
+    .fx-stat-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--gold); }
+}
 .fx-stat-tile small { color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; }
 .fx-stat-tile h3, .fx-stat-tile h4 { margin: 6px 0 0; font-variant-numeric: tabular-nums; }
 
@@ -535,7 +590,7 @@ body.fx-leaving { opacity: 0; transition: opacity .15s ease; }
     100% { box-shadow: 0 0 0 0 rgba(28, 138, 84, 0); }
 }
 
-.fx-hero h1 { color: var(--text); font-size: clamp(2.3rem, 5vw, 3.8rem); line-height: 1.04; margin-bottom: 18px; font-weight: 700; letter-spacing: -0.01em; }
+.fx-hero h1 { color: var(--text); font-size: clamp(2.3rem, 5vw, 3.8rem); line-height: 1.04; margin-bottom: 18px; font-weight: 700; letter-spacing: -0.025em; }
 .fx-hero p.lead { font-family: var(--font-body); color: var(--muted); max-width: 48ch; font-size: 1.08rem; line-height: 1.6; margin-bottom: 26px; }
 .fx-hero .cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 32px; }
 
@@ -594,9 +649,13 @@ body.fx-leaving { opacity: 0; transition: opacity .15s ease; }
     display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg);
     padding: 20px; text-decoration: none; color: var(--text);
-    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-fast) ease;
+    -webkit-tap-highlight-color: transparent;
 }
-.fx-category-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md), 0 0 20px rgba(212, 175, 55, .3); border-color: var(--neon-cyan); }
+@media (hover: hover) and (pointer: fine) {
+    .fx-category-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md), 0 0 20px rgba(212, 175, 55, .3); border-color: var(--neon-cyan); }
+}
+.fx-category-card:active { transform: scale(.97); transition-duration: 80ms; }
 .fx-category-icon {
     width: 46px; height: 46px; border-radius: 12px; background: var(--sun); color: var(--gold-deep);
     display: flex; align-items: center; justify-content: center;
@@ -622,7 +681,7 @@ body.fx-leaving { opacity: 0; transition: opacity .15s ease; }
 }
 .fx-cta-headline {
     font-family: var(--font-display); font-weight: 700; text-transform: none;
-    letter-spacing: -0.01em; line-height: .98; color: var(--navy);
+    letter-spacing: -0.03em; line-height: .98; color: var(--navy);
     font-size: clamp(2.4rem, 7vw, 4.8rem); margin: 0 0 26px;
 }
 .fx-eyebrow-label { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--gold-deep); margin-bottom: 8px; }
@@ -650,8 +709,10 @@ body.fx-leaving { opacity: 0; transition: opacity .15s ease; }
     position: relative; display: inline-flex; align-items: center; gap: 6px;
     border: 1.5px solid var(--line); border-radius: 100px; padding: 7px 16px;
     font-size: .85rem; font-weight: 600; color: var(--muted); cursor: pointer;
-    transition: border-color .15s ease, background-color .15s ease, color .15s ease;
+    transition: border-color var(--dur-fast) ease, background-color var(--dur-fast) ease, color var(--dur-fast) ease, transform var(--dur-press) var(--ease-out);
+    touch-action: manipulation;
 }
+.fx-type-pill:active { transform: scale(.96); }
 .fx-type-pill:has(input:checked), .fx-type-pill.is-active { border-color: var(--gold); background: var(--sun); color: var(--navy); }
 .fx-type-pill input { position: absolute; opacity: 0; width: 0; height: 0; }
 button.fx-type-pill { font-family: var(--font-body); }
@@ -698,7 +759,9 @@ button.fx-type-pill { font-family: var(--font-body); }
     border-radius: 50%; background: rgba(255, 255, 255, .06); color: #b7c0d6;
     transition: background-color .15s ease, color .15s ease, transform .15s ease;
 }
-.fx-footer-social a:hover { background: var(--gold); color: var(--navy-900); transform: translateY(-2px); }
+.fx-footer-social a:hover { background: var(--gold); color: var(--navy-900); }
+@media (hover: hover) and (pointer: fine) { .fx-footer-social a:hover { transform: translateY(-2px); } }
+.fx-footer-social a:active { transform: scale(.92); }
 
 .fx-footer-newsletter p { font-size: .85rem; margin-bottom: 14px; }
 .fx-newsletter-form { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -710,8 +773,10 @@ button.fx-type-pill { font-family: var(--font-body); }
 .fx-newsletter-form input:focus { outline: none; border-color: var(--gold); }
 .fx-newsletter-form button {
     background: var(--gold); color: var(--navy-900); border: none; border-radius: var(--radius-sm);
-    padding: 10px 18px; font-size: .85rem; font-weight: 700; cursor: pointer; transition: background-color .15s ease;
+    padding: 10px 18px; font-size: .85rem; font-weight: 700; cursor: pointer;
+    transition: background-color var(--dur-fast) ease, transform var(--dur-press) var(--ease-out);
 }
+.fx-newsletter-form button:active { transform: scale(.97); }
 .fx-newsletter-form button:hover { background: var(--gold-deep); }
 
 .fx-footer-legal {
@@ -738,7 +803,8 @@ button.fx-type-pill { font-family: var(--font-body); }
     position: relative;
     overflow: hidden;
     background-size: 100% 220%;
-    animation: fx-hero-drift 16s ease-in-out infinite alternate;
+    /* No looping background drift: large slow-moving backgrounds are a
+       vestibular trigger (apple-design §14) and add nothing functional. */
     transition: background-color .8s ease;
 }
 
@@ -766,7 +832,7 @@ button.fx-type-pill { font-family: var(--font-body); }
 }
 .fx-hero-inner { position: relative; z-index: 1; }
 
-.fx-hero-copy { animation: fx-hero-in .8s cubic-bezier(.2, .8, .2, 1) both; }
+.fx-hero-copy { animation: fx-hero-in .6s var(--ease-out) both; }
 
 /* Ambient particles: a handful of gold/navy motes drifting slowly upward
    and fading, filling the hero's negative space with continuous, cheap motion. */
@@ -811,7 +877,7 @@ button.fx-type-pill { font-family: var(--font-body); }
     .fx-marquee-track { animation: none; }
 }
 @keyframes fx-hero-in {
-    from { opacity: 0; transform: translateY(26px); }
+    from { opacity: 0; transform: translateY(14px); }
     to { opacity: 1; transform: translateY(0); }
 }
 /* thin animated neon seam under the hero, the site's one recurring
@@ -824,14 +890,12 @@ button.fx-type-pill { font-family: var(--font-body); }
 }
 @keyframes fx-seam-drift { to { background-position: -200% 0; } }
 
-.fx-feature-card { animation: fx-float 5.5s ease-in-out infinite; }
-@keyframes fx-float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
+/* The featured card used to bob on a 5.5s loop (~0.18 Hz) - exactly the
+   slow oscillation range apple-design §14 flags as uncomfortable. It now
+   stays still; the photo zoom on hover carries the "alive" feeling. */
 
-.fx-split .fx-word { display: inline-block; opacity: 0; transform: translateY(16px); animation: fx-word-in .55s cubic-bezier(.2, .8, .2, 1) forwards; }
-@keyframes fx-word-in { to { opacity: 1; transform: translateY(0); } }
+.fx-split .fx-word { display: inline-block; opacity: 0; transform: translateY(10px); filter: blur(4px); animation: fx-word-in .5s var(--ease-out) forwards; }
+@keyframes fx-word-in { to { opacity: 1; transform: translateY(0); filter: blur(0); } }
 
 /* ==========================================================================
    Micro-interactions: tilt cards, icon hover, scroll progress
@@ -839,12 +903,14 @@ button.fx-type-pill { font-family: var(--font-body); }
 
 .fx-tilt { transition: transform .15s ease, box-shadow .2s ease; transform-style: preserve-3d; will-change: transform; }
 
-.fx-why-icon { transition: transform .25s ease, background-color .25s ease, color .25s ease; }
-.fx-why-item:hover .fx-why-icon { transform: scale(1.12) rotate(-4deg); background: var(--gold); color: #fff; }
+.fx-why-icon { transition: transform var(--dur-base) var(--ease-out), background-color var(--dur-fast) ease, color var(--dur-fast) ease; }
+@media (hover: hover) and (pointer: fine) {
+    .fx-why-item:hover .fx-why-icon { transform: scale(1.08) rotate(-4deg); background: var(--gold); color: #fff; }
+}
 
 .fx-progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--gold); width: 0%; z-index: 100; }
 
-.step-pin .marker { transition: background-color .3s ease, color .3s ease, transform .3s ease, border-color .3s ease; }
+.step-pin .marker { transition: background-color var(--dur-base) ease, color var(--dur-base) ease, transform var(--dur-base) var(--ease-out), border-color var(--dur-base) ease; }
 .step-pin.is-active .marker { background: var(--navy); color: #fff; border-color: var(--navy); transform: scale(1.1); }
 .step-pin.is-active h4 { color: var(--gold-deep); }
 
@@ -871,13 +937,14 @@ button.fx-type-pill { font-family: var(--font-body); }
     background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--ok);
     border-radius: var(--radius-sm); box-shadow: var(--shadow-md); padding: 12px 16px; font-size: .9rem;
     display: flex; align-items: flex-start; gap: 10px; color: var(--text);
-    transform: translateX(120%); opacity: 0; animation: fx-toast-in .35s ease forwards;
+    transform: translateX(110%); opacity: 0; animation: fx-toast-in .4s var(--ease-drawer) forwards;
 }
 .fx-toast.fx-toast-danger { border-left-color: var(--danger); }
-.fx-toast.is-leaving { animation: fx-toast-out .3s ease forwards; }
+/* Exits along the same path it entered (spatial consistency), and faster than it came in. */
+.fx-toast.is-leaving { animation: fx-toast-out .2s var(--ease-out) forwards; }
 .fx-toast button { background: none; border: none; color: var(--muted); margin-left: auto; cursor: pointer; line-height: 1; font-size: 1.1rem; }
 @keyframes fx-toast-in { to { transform: translateX(0); opacity: 1; } }
-@keyframes fx-toast-out { to { transform: translateX(120%); opacity: 0; } }
+@keyframes fx-toast-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(110%); opacity: 0; } }
 @media (max-width: 480px) { .fx-toast-wrap { left: 16px; right: 16px; max-width: none; top: 12px; } }
 
 /* ==========================================================================
@@ -886,13 +953,14 @@ button.fx-type-pill { font-family: var(--font-body); }
 
 .fx-sheet-backdrop {
     position: fixed; inset: 0; background: rgba(16, 23, 40, .45); z-index: 60;
-    animation: fx-fade-in .2s ease;
+    animation: fx-fade-in .24s var(--ease-out);
 }
 .fx-sheet {
     position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); z-index: 61;
     border-radius: 20px 20px 0 0; padding: 18px 20px 24px; box-shadow: var(--shadow-lg);
     max-height: 80vh; overflow-y: auto;
-    animation: fx-sheet-up .3s cubic-bezier(.2, .8, .2, 1);
+    animation: fx-sheet-up .4s var(--ease-drawer);
+    overscroll-behavior: contain;
 }
 @keyframes fx-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes fx-sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -912,6 +980,7 @@ button.fx-type-pill { font-family: var(--font-body); }
 
 .fx-sticky-bar {
     position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line);
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
     box-shadow: 0 -8px 24px rgba(16, 23, 40, .10); padding: 12px 16px; z-index: 50;
     display: none; align-items: center; justify-content: space-between; gap: 12px;
 }
@@ -933,7 +1002,8 @@ button.fx-type-pill { font-family: var(--font-body); }
     box-shadow: var(--shadow-lg), 0 0 24px rgba(212, 175, 55, .25);
     padding: 4px; border: 1px solid rgba(212, 175, 55, .35);
     opacity: 0; transform: translateY(16px) scale(.96);
-    transition: opacity .35s ease, transform .35s ease;
+    transition: opacity .3s var(--ease-out), transform .3s var(--ease-out);
+    transform-origin: left bottom; /* grows out of its corner */
     pointer-events: none;
 }
 .fx-help-chip.is-visible { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
@@ -966,8 +1036,9 @@ button.fx-type-pill { font-family: var(--font-body); }
 .fx-gallery-thumbs { display: flex; gap: 8px; margin-top: 8px; overflow-x: auto; }
 .fx-gallery-thumbs img {
     width: 62px; height: 62px; object-fit: cover; border-radius: 8px; cursor: pointer;
-    opacity: .55; transition: opacity .2s ease, box-shadow .2s ease; flex-shrink: 0;
+    opacity: .55; transition: opacity var(--dur-fast) ease, box-shadow var(--dur-fast) ease, transform var(--dur-press) var(--ease-out); flex-shrink: 0;
 }
+.fx-gallery-thumbs img:active { transform: scale(.94); }
 .fx-gallery-thumbs img.is-active { opacity: 1; box-shadow: 0 0 0 2px var(--gold); }
 
 @media (prefers-reduced-motion: reduce) {
@@ -988,7 +1059,7 @@ button.fx-type-pill { font-family: var(--font-body); }
    via the .fx-reveal hook + a tiny IntersectionObserver in app.js.
    ========================================================================== */
 
-.fx-reveal { opacity: 0; transform: translateY(20px); transition: opacity .6s ease, transform .6s ease; }
+.fx-reveal { opacity: 0; transform: translateY(12px); transition: opacity .5s var(--ease-out), transform .5s var(--ease-out); }
 .fx-reveal.is-visible { opacity: 1; transform: translateY(0); }
 
 /* ==========================================================================
@@ -1137,13 +1208,47 @@ body.fx-intro-locked { overflow: hidden; }
    Reduced motion
    ========================================================================== */
 
+/* Reduced motion = gentler, not none (apple-design §14): movement, loops
+   and parallax are removed, but short opacity/color cross-fades stay so
+   state changes are still understandable. */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         animation-duration: .001ms !important;
         animation-iteration-count: 1 !important;
-        transition-duration: .001ms !important;
         scroll-behavior: auto !important;
     }
-    .vehicle-card:hover, .btn:hover { transform: none !important; }
+    /* entrances that matter become a plain 200ms fade */
+    .fx-toast, .fx-toast.is-leaving, .fx-sheet, .fx-sheet-backdrop, .fx-momo-check, body {
+        animation-name: fx-fade-in !important;
+        animation-duration: .2s !important;
+    }
+    .fx-toast.is-leaving { animation-direction: reverse !important; }
+    .fx-toast { transform: none; }
+    .vehicle-card:hover, .vehicle-card:hover img, .btn:hover, .btn:active, .fx-chip:hover,
+    .fx-category-card:hover, .fx-stat-tile:hover, .fx-why-item:hover .fx-why-icon,
+    .fx-footer-social a:hover, .step-pin.is-active .marker { transform: none !important; }
+    .fx-help-chip { transform: none; }
     .fx-reveal { opacity: 1 !important; transform: none !important; }
+    .fx-split .fx-word { filter: none; }
+}
+
+/* Reduced transparency / increased contrast: frost the glass navbar solid. */
+@media (prefers-reduced-transparency: reduce) {
+    .fx-navbar { background: var(--navy); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+@media (prefers-contrast: more) {
+    .fx-navbar { background: var(--navy); -webkit-backdrop-filter: none; backdrop-filter: none; border-bottom-color: rgba(255, 255, 255, .4); }
+    :root { --line: #8C96AB; --muted: #3E4655; }
+    :root[data-theme="night"] { --line: rgba(255, 255, 255, .4); --muted: #C9D1E6; }
+}
+
+/* Native cross-document page transition (Chrome/Edge/Safari 18+): a short
+   cross-fade with zero added latency, replacing the old JS 150ms hold. */
+@view-transition { navigation: auto; }
+::view-transition-old(root), ::view-transition-new(root) {
+    animation-duration: .18s;
+    animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+    @view-transition { navigation: none; }
 }

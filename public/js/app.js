@@ -166,12 +166,14 @@ function initDecimalCounters() {
     });
 }
 
-// Fade the page out just before leaving it via an internal link or form
-// submit, so navigation between pages reads as a transition rather than a
-// hard cut (the fade-in on the next page's load completes the illusion).
+// Page transitions. This used to fade the page out and hold every internal
+// link click for 150ms before navigating: an artificial delay on the input
+// path (apple-design §1 "kill latency"). Navigation now starts immediately;
+// supporting browsers get a native cross-document View Transition instead
+// (see @view-transition in app.css), others just load the next page.
 function initPageTransitions() {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
+    return;
+    // eslint-disable-next-line no-unreachable
     document.addEventListener('click', (e) => {
         const link = e.target.closest('a[href]');
         if (!link) return;

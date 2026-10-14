@@ -95,7 +95,7 @@
                         <a href="{{ route('admin.partners.edit', $p) }}" class="btn btn-admin btn-admin-outline">Edit</a>
                         <div class="fx-row-menu" x-data="{ open: false }" @click.outside="open = false">
                             <button type="button" class="btn btn-admin btn-admin-ghost" @click="open = !open" aria-label="More actions">&hellip;</button>
-                            <div class="fx-row-menu-panel" x-show="open" x-cloak x-transition.duration.120ms>
+                            <div class="fx-row-menu-panel" x-show="open" x-cloak x-transition.origin.top.right.duration.120ms>
                                 @if($p->is_suspended)
                                     <form method="POST" action="{{ route('admin.partners.unsuspend', $p) }}">
                                         @csrf
