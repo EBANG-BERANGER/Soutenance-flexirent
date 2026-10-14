@@ -24,8 +24,7 @@
                         .catch(() => { this.error = true; });
                 },
                 init() {
-                    // Only in demo mode (MOMO_SIMULATION). Otherwise the
-                    // payment stays pending until an admin confirms it.
+                    // demo mode only, otherwise the admin confirms the payment
                     if (!@json($simulationEnabled)) return;
                     // Mirrors the delay a real MTN MoMo / Airtel Money push
                     // confirmation would take once the client approves it.

@@ -319,7 +319,7 @@ class AdminController extends Controller
                 'company_name' => $validated['company_name'] ?? null,
                 'tin' => $validated['tin'] ?? null,
                 'national_id_number' => $validated['national_id_number'] ?? null,
-                'documents_path' => $request->file('documents_path')->store('partner-documents', \App\Support\PrivateFiles::DISK),
+                'documents_path' => $request->file('documents_path')->store('partner-documents', 'local'),
                 'status' => 'pending',
             ]);
         }
@@ -569,15 +569,11 @@ class AdminController extends Controller
         }, $filename, ['Content-Type' => 'text/csv']);
     }
 
-    /**
-     * SECURITY (CSV/formula injection): a client named "=HYPERLINK(...)"
-     * would otherwise run as a formula when an admin opens the export in
-     * Excel. Text cells starting with = + - @ or a control char get a
-     * leading apostrophe; real numbers are left untouched.
-     */
+    // Security: if a client's name starts with "=" Excel would run it as a
+    // formula when the admin opens the CSV. Adding ' in front prevents it.
     private static function csvSafe($value)
     {
-        if (is_string($value) && $value !== '' && ! is_numeric($value) && preg_match('/^[=+\-@\t\r]/', $value)) {
+        if (is_string($value) && ! is_numeric($value) && preg_match('/^[=+\-@]/', $value)) {
             return "'" . $value;
         }
 
@@ -1091,18 +1087,12 @@ class AdminController extends Controller
         return view('admin.contracts', compact('contracts'));
     }
 
-    /**
-     * Partner ID / business-registration document, served only to admins
-     * (route is behind role:admin). Never exposed through a public URL.
-     */
+    // Shows a partner's document (ID / business registration). Admin only.
     public function partnerDocument(Partner $partner)
     {
         abort_unless(\App\Support\PrivateFiles::ensurePrivate($partner->documents_path), 404);
 
-        return Storage::disk(\App\Support\PrivateFiles::DISK)->response($partner->documents_path, null, [
-            'X-Content-Type-Options' => 'nosniff',
-            'Cache-Control' => 'private, no-store',
-        ]);
+        return Storage::disk('local')->response($partner->documents_path);
     }
 
     public function destroyContract(Contract $contract)

@@ -8,9 +8,8 @@ use App\Support\PrivateFiles;
 use Illuminate\Console\Command;
 
 /**
- * One-off: moves every existing contract PDF and partner document from the
- * public disk (reachable by anyone at /storage/...) to the private disk.
- * Run once after deploying:  php artisan files:make-private
+ * Moves the old contracts and partner documents from the public disk to
+ * the private disk. Run it once:  php artisan files:make-private
  */
 class MakeSensitiveFilesPrivate extends Command
 {

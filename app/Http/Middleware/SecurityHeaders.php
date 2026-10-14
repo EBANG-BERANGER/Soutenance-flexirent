@@ -7,9 +7,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Baseline HTTP security headers on every response: no framing
- * (clickjacking), no MIME sniffing, no full URLs leaked in Referer, no
- * camera/mic/geolocation access, and HSTS once served over HTTPS.
+ * Adds basic security headers to every page (Security requirement).
  */
 class SecurityHeaders
 {
@@ -17,22 +15,16 @@ class SecurityHeaders
     {
         $response = $next($request);
 
-        $headers = $response->headers;
-        $headers->set('X-Frame-Options', 'SAMEORIGIN');
-        $headers->set('X-Content-Type-Options', 'nosniff');
-        $headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
-        $headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
-        $headers->set('Cross-Origin-Opener-Policy', 'same-origin');
-        $headers->remove('X-Powered-By');
+        // the site cannot be shown inside an iframe on another site (clickjacking)
+        $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+        // the browser must not guess the file type
+        $response->headers->set('X-Content-Type-Options', 'nosniff');
+        // don't send the full URL to other websites
+        $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
+        // force HTTPS once the site is online
         if ($request->isSecure()) {
-            $headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-        }
-
-        // Pages behind login (reservations, contracts, admin) must not be
-        // kept in shared/back-button caches after logout.
-        if ($request->user()) {
-            $headers->set('Cache-Control', 'no-store, private');
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000');
         }
 
         return $response;

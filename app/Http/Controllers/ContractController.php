@@ -22,6 +22,6 @@ class ContractController extends Controller
         abort_if(! $contract, 404, 'Contract not yet generated for this reservation.');
         abort_unless(PrivateFiles::ensurePrivate($contract->pdf_path), 404);
 
-        return Storage::disk(PrivateFiles::DISK)->download($contract->pdf_path, "contract-{$reservation->id}.pdf");
+        return Storage::disk('local')->download($contract->pdf_path, "contract-{$reservation->id}.pdf");
     }
 }

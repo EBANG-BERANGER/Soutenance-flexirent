@@ -115,8 +115,8 @@ class PaymentController extends Controller
      */
     public function simulateConfirm(Reservation $reservation, Payment $payment)
     {
-        // SECURITY: without this gate any client could confirm their own
-        // payment (and get a contract) without paying anything.
+        // Security: only allowed in demo mode, otherwise a client could
+        // confirm his own payment without paying.
         abort_unless(config('services.mtn_momo.simulation'), 403, 'Payment simulation is disabled.');
         $this->authorizeOwner($reservation);
         abort_unless($payment->reservation_id === $reservation->id, 404);

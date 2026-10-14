@@ -34,10 +34,8 @@ class AdminAuthController extends Controller
             'password' => ['required'],
         ]);
 
-        // SECURITY: the admin portal is the most valuable target, so it
-        // never reveals whether an email exists or which half was wrong;
-        // one generic message for unknown email, wrong password or a
-        // non-admin account (no way to map who the administrators are).
+        // Security: same message in every case, so nobody can find out
+        // which emails belong to an administrator.
         $user = User::where('email', $credentials['email'])->first();
 
         if (! $user || ! Hash::check($credentials['password'], $user->password) || ! $user->isAdmin()) {
@@ -70,8 +68,7 @@ class AdminAuthController extends Controller
     {
         $request->validate(['email' => ['required', 'email']]);
 
-        // Same answer whether or not the email belongs to an admin, so the
-        // form can't be used to discover administrator addresses.
+        // same answer for every email (don't reveal who is admin)
         $genericStatus = 'If this email belongs to an administrator account, a reset link has been sent to it.';
         if (! User::where('email', $request->email)->where('role', 'admin')->exists()) {
             return back()->with('status', $genericStatus);
@@ -85,7 +82,7 @@ class AdminAuthController extends Controller
             return back()->withErrors(['email' => 'We could not send the reset email right now. Please try again later.']);
         }
 
-        return $status === Password::RESET_LINK_SENT || $status === Password::RESET_THROTTLED
+        return $status === Password::RESET_LINK_SENT
             ? back()->with('status', $genericStatus)
             : back()->withErrors(['email' => __($status)]);
     }

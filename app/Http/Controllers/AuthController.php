@@ -149,7 +149,7 @@ class AuthController extends Controller
         ]);
 
         if ($validated['role'] === 'partner') {
-            $documentsPath = $request->file('documents_path')->store('partner-documents', \App\Support\PrivateFiles::DISK);
+            $documentsPath = $request->file('documents_path')->store('partner-documents', 'local');
 
             $partner = Partner::create([
                 'user_id' => $user->id,

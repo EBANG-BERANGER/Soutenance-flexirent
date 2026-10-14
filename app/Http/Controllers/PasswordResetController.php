@@ -30,8 +30,7 @@ class PasswordResetController extends Controller
     {
         $request->validate(['email' => ['required', 'email']]);
 
-        // SECURITY: an admin email gets the same neutral answer as any other,
-        // so this public form can't be used to find out who the admins are.
+        // Security: don't reveal that this email belongs to an admin
         if (User::where('email', $request->email)->where('role', 'admin')->exists()) {
             return back()->with('status', 'If an account exists for this email, a password reset link has been sent to it.');
         }

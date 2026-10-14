@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initPasswordToggles();
     initPhotoPickers();
     initNavbarScroll();
-    initPageTransitions();
     initFormSpinners();
     initFloatingLabels();
     initPasswordStrengthMeter();
@@ -163,30 +162,6 @@ function initDecimalCounters() {
         }, { threshold: 0.4 });
 
         observer.observe(el);
-    });
-}
-
-// Page transitions. This used to fade the page out and hold every internal
-// link click for 150ms before navigating: an artificial delay on the input
-// path (apple-design §1 "kill latency"). Navigation now starts immediately;
-// supporting browsers get a native cross-document View Transition instead
-// (see @view-transition in app.css), others just load the next page.
-function initPageTransitions() {
-    return;
-    // eslint-disable-next-line no-unreachable
-    document.addEventListener('click', (e) => {
-        const link = e.target.closest('a[href]');
-        if (!link) return;
-        if (link.target === '_blank' || link.hasAttribute('download')) return;
-        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-
-        const url = new URL(link.href, window.location.href);
-        if (url.origin !== window.location.origin) return;
-        if (url.pathname === window.location.pathname && url.hash) return;
-
-        e.preventDefault();
-        document.body.classList.add('fx-leaving');
-        setTimeout(() => { window.location.href = link.href; }, 150);
     });
 }
 
@@ -523,8 +498,7 @@ function initToasts() {
         if (errors.length === 1) {
             showToast(wrap, errors[0], 'danger');
         } else if (errors.length > 1) {
-            // Built as DOM nodes, never as an HTML string: messages can echo
-            // user-supplied text (names, titles), which must not run as HTML.
+            // textContent instead of innerHTML so a message can't inject HTML (XSS)
             const list = document.createElement('ul');
             list.className = 'mb-0 ps-3';
             errors.forEach((e) => {
@@ -540,7 +514,7 @@ function initToasts() {
 function showToast(wrap, content, type) {
     const toast = document.createElement('div');
     toast.className = 'fx-toast' + (type === 'danger' ? ' fx-toast-danger' : '');
-    // SECURITY: text goes in via textContent (no innerHTML) to rule out XSS.
+    // textContent instead of innerHTML so a message can't inject HTML (XSS)
     const body = document.createElement('span');
     if (content instanceof Node) body.appendChild(content);
     else body.textContent = String(content);

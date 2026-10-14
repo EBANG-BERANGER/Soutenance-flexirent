@@ -43,14 +43,8 @@
     --neon-cyan: #D4AF37;
     --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
     --font-body: 'General Sans', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    /* Motion tokens (apple-design + emil-design-eng): strong custom curves
-       instead of the weak built-in `ease`, short UI durations (<300ms). */
-    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);          /* enter / respond */
-    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);      /* on-screen movement */
-    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);       /* iOS-like sheet/drawer */
-    --dur-press: 120ms;
-    --dur-fast: 180ms;
-    --dur-base: 240ms;
+    /* animation curve reused everywhere (fast start, soft stop) */
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 /* ==========================================================================
@@ -85,24 +79,20 @@ body {
     line-height: 1.55;
     opacity: 0;
     animation: fx-page-in .18s var(--ease-out) forwards;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
 }
 @keyframes fx-page-in { to { opacity: 1; } }
-/* Size-specific tracking & leading: large type tighter, small type looser. */
+/* big titles: tighter letters and lines */
 h1, h2, h3, h4, h5, .fx-brand {
     font-family: var(--font-display);
     font-weight: 700;
     letter-spacing: -0.01em;
     color: var(--text);
-    font-optical-sizing: auto;
-    text-wrap: balance;
 }
 h1 { line-height: 1.08; letter-spacing: -0.022em; }
 h2 { line-height: 1.15; letter-spacing: -0.018em; }
 h3 { line-height: 1.2; letter-spacing: -0.012em; }
 h4, h5 { line-height: 1.3; letter-spacing: -0.005em; }
-p { text-wrap: pretty; }
+
 a { color: var(--text); }
 a:hover { color: var(--gold-deep); }
 ::selection { background: rgba(199, 150, 44, .18); color: var(--text); }
@@ -144,15 +134,12 @@ a:hover { color: var(--gold-deep); }
     padding: 7px 12px;
 }
 
-/* Translucent material: content scrolls under the bar instead of a solid strip. */
+/* semi-transparent navbar with a blur effect */
 .fx-navbar {
     background: rgba(16, 23, 40, .86); position: sticky; top: 0; z-index: 40; box-shadow: var(--shadow-sm);
     -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%);
     border-bottom: 1px solid rgba(255, 255, 255, .06);
-    transition: box-shadow var(--dur-base) var(--ease-out);
-}
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .fx-navbar { background: var(--navy); }
+    transition: box-shadow .24s var(--ease-out);
 }
 .fx-navbar.is-scrolled { box-shadow: var(--shadow-lg); }
 .fx-navbar-inner {
@@ -205,16 +192,15 @@ a:hover { color: var(--gold-deep); }
     font-weight: 600;
     font-family: var(--font-body);
     padding: 8px 18px;
-    transition: transform var(--dur-press) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out),
-                background-color var(--dur-fast) ease, border-color var(--dur-fast) ease, color var(--dur-fast) ease;
+    transition: transform .12s var(--ease-out), box-shadow .18s var(--ease-out),
+                background-color .18s ease, border-color .18s ease, color .18s ease;
     border-width: 1.5px;
-    touch-action: manipulation; /* no 300ms tap delay */
-    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 @media (hover: hover) and (pointer: fine) {
     .btn:hover { transform: translateY(-1px); }
 }
-/* Feedback on press, not on release: instant scale-down. */
+/* small "press" effect when the button is clicked */
 .btn:active { transform: scale(.97); transition-duration: 80ms; }
 
 .btn-gold {
@@ -229,7 +215,7 @@ a:hover { color: var(--gold-deep); }
 .btn-gold::after {
     content: ''; position: absolute; top: 0; left: -75%; width: 50%; height: 100%;
     background: linear-gradient(115deg, transparent, rgba(255, 255, 255, .4), transparent);
-    transform: skewX(-20deg); transition: left .55s var(--ease-in-out); pointer-events: none;
+    transform: skewX(-20deg); transition: left .55s ease-in-out; pointer-events: none;
 }
 @media (hover: hover) and (pointer: fine) {
     .btn-gold:hover::after { left: 125%; }
@@ -261,11 +247,10 @@ a:hover { color: var(--gold-deep); }
     position: relative; display: block; height: 320px;
     border-radius: var(--radius-md); overflow: hidden;
     box-shadow: var(--shadow-sm); text-decoration: none;
-    transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
-    -webkit-tap-highlight-color: transparent;
+    transition: transform .24s var(--ease-out), box-shadow .24s var(--ease-out);
 }
 .vehicle-card img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .45s var(--ease-out); }
-/* Hover lift only for a real mouse: on touch, hover fires on tap and sticks. */
+/* hover effects only on computers (on phones the hover stays stuck after a tap) */
 @media (hover: hover) and (pointer: fine) {
     .vehicle-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg), 0 0 0 1px rgba(212, 175, 55, .55), 0 0 34px rgba(212, 175, 55, .4); }
     .vehicle-card:hover img { transform: scale(1.06); }
@@ -277,7 +262,7 @@ a:hover { color: var(--gold-deep); }
 .vehicle-card::after, .fx-category-card::after, .fx-feature-card::after {
     content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
     background: linear-gradient(115deg, transparent, rgba(255, 255, 255, .38), transparent);
-    transform: skewX(-20deg); transition: left .65s var(--ease-in-out); pointer-events: none; z-index: 2;
+    transform: skewX(-20deg); transition: left .65s ease-in-out; pointer-events: none; z-index: 2;
 }
 @media (hover: hover) and (pointer: fine) {
     .vehicle-card:hover::after, .fx-category-card:hover::after, .fx-feature-card:hover::after { left: 130%; }
@@ -330,13 +315,10 @@ a:hover { color: var(--gold-deep); }
 .fx-switch-thumb {
     position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%;
     background: #fff; box-shadow: 0 1px 3px rgba(16, 23, 40, .3);
-    transition: transform var(--dur-fast) var(--ease-out), width var(--dur-press) var(--ease-out); /* transform = GPU, not `left` */
+    transition: transform .18s var(--ease-out);
 }
 .fx-switch input:checked + .fx-switch-track { background: var(--ok); }
 .fx-switch input:checked + .fx-switch-track .fx-switch-thumb { transform: translateX(18px); }
-/* iOS-style: the thumb stretches while pressed, acknowledging the touch. */
-.fx-switch:active .fx-switch-thumb { width: 24px; }
-.fx-switch:active input:checked + .fx-switch-track .fx-switch-thumb { transform: translateX(14px); }
 .fx-switch input:focus-visible + .fx-switch-track { outline: 2px solid var(--gold-accent); outline-offset: 2px; }
 
 /* ---------- forms ---------- */
@@ -426,7 +408,7 @@ a:hover { color: var(--gold-deep); }
 .fx-pay-option {
     display: flex; align-items: flex-start; gap: 12px; border: 1.5px solid var(--line); border-radius: var(--radius-md);
     padding: 12px 14px; cursor: pointer;
-    transition: border-color var(--dur-fast) ease, background-color var(--dur-fast) ease, transform var(--dur-press) var(--ease-out);
+    transition: border-color .18s ease, background-color .18s ease, transform .12s var(--ease-out);
 }
 @media (hover: hover) and (pointer: fine) { .fx-pay-option:hover { border-color: var(--gold); } }
 .fx-pay-option:active { transform: scale(.99); }
@@ -462,7 +444,6 @@ a:hover { color: var(--gold-deep); }
     background: var(--ok); color: #fff; font-size: 1.8rem; line-height: 64px;
     animation: fx-momo-pop .4s var(--ease-out);
 }
-/* Rare success moment: allowed a touch of delight (slight overshoot). */
 @keyframes fx-momo-pop {
     0% { transform: scale(.85); opacity: 0; }
     60% { transform: scale(1.04); opacity: 1; }
@@ -477,18 +458,17 @@ a:hover { color: var(--gold-deep); }
 .fx-spinner {
     display: inline-block; width: 15px; height: 15px; border-radius: 50%;
     border: 2px solid currentColor; border-top-color: transparent; opacity: .85;
-    animation: fx-spin .6s linear infinite; vertical-align: -3px; margin-right: 6px; /* faster spin = feels faster */
+    animation: fx-spin .6s linear infinite; vertical-align: -3px; margin-right: 6px;
 }
 @keyframes fx-spin { to { transform: rotate(360deg); } }
 
-/* page transition fade-out on internal navigation */
-body.fx-leaving { opacity: 0; transition: opacity .15s ease; }
+
 
 /* clickable filter chips (category pills, etc.) */
 .fx-chip {
     display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid var(--line);
     background: var(--surface); border-radius: 20px; padding: 6px 14px; font-size: .85rem;
-    cursor: pointer; transition: border-color var(--dur-fast) ease, background-color var(--dur-fast) ease, transform var(--dur-press) var(--ease-out);
+    cursor: pointer; transition: border-color .18s ease, background-color .18s ease, transform .12s var(--ease-out);
     touch-action: manipulation;
 }
 @media (hover: hover) and (pointer: fine) { .fx-chip:hover { transform: translateY(-1px); border-color: var(--gold); } }
@@ -499,7 +479,7 @@ body.fx-leaving { opacity: 0; transition: opacity .15s ease; }
 .fx-stat-tile {
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 16px 18px;
     box-shadow: var(--shadow-sm); height: 100%;
-    transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-fast) ease;
+    transition: transform .24s var(--ease-out), box-shadow .24s var(--ease-out), border-color .18s ease;
 }
 @media (hover: hover) and (pointer: fine) {
     .fx-stat-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--gold); }
@@ -649,8 +629,7 @@ body.fx-leaving { opacity: 0; transition: opacity .15s ease; }
     display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg);
     padding: 20px; text-decoration: none; color: var(--text);
-    transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), border-color var(--dur-fast) ease;
-    -webkit-tap-highlight-color: transparent;
+    transition: transform .24s var(--ease-out), box-shadow .24s var(--ease-out), border-color .18s ease;
 }
 @media (hover: hover) and (pointer: fine) {
     .fx-category-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md), 0 0 20px rgba(212, 175, 55, .3); border-color: var(--neon-cyan); }
@@ -709,7 +688,7 @@ body.fx-leaving { opacity: 0; transition: opacity .15s ease; }
     position: relative; display: inline-flex; align-items: center; gap: 6px;
     border: 1.5px solid var(--line); border-radius: 100px; padding: 7px 16px;
     font-size: .85rem; font-weight: 600; color: var(--muted); cursor: pointer;
-    transition: border-color var(--dur-fast) ease, background-color var(--dur-fast) ease, color var(--dur-fast) ease, transform var(--dur-press) var(--ease-out);
+    transition: border-color .18s ease, background-color .18s ease, color .18s ease, transform .12s var(--ease-out);
     touch-action: manipulation;
 }
 .fx-type-pill:active { transform: scale(.96); }
@@ -774,7 +753,7 @@ button.fx-type-pill { font-family: var(--font-body); }
 .fx-newsletter-form button {
     background: var(--gold); color: var(--navy-900); border: none; border-radius: var(--radius-sm);
     padding: 10px 18px; font-size: .85rem; font-weight: 700; cursor: pointer;
-    transition: background-color var(--dur-fast) ease, transform var(--dur-press) var(--ease-out);
+    transition: background-color .18s ease, transform .12s var(--ease-out);
 }
 .fx-newsletter-form button:active { transform: scale(.97); }
 .fx-newsletter-form button:hover { background: var(--gold-deep); }
@@ -803,8 +782,7 @@ button.fx-type-pill { font-family: var(--font-body); }
     position: relative;
     overflow: hidden;
     background-size: 100% 220%;
-    /* No looping background drift: large slow-moving backgrounds are a
-       vestibular trigger (apple-design §14) and add nothing functional. */
+    /* background animation removed: it was distracting */
     transition: background-color .8s ease;
 }
 
@@ -890,9 +868,6 @@ button.fx-type-pill { font-family: var(--font-body); }
 }
 @keyframes fx-seam-drift { to { background-position: -200% 0; } }
 
-/* The featured card used to bob on a 5.5s loop (~0.18 Hz) - exactly the
-   slow oscillation range apple-design §14 flags as uncomfortable. It now
-   stays still; the photo zoom on hover carries the "alive" feeling. */
 
 .fx-split .fx-word { display: inline-block; opacity: 0; transform: translateY(10px); filter: blur(4px); animation: fx-word-in .5s var(--ease-out) forwards; }
 @keyframes fx-word-in { to { opacity: 1; transform: translateY(0); filter: blur(0); } }
@@ -903,14 +878,14 @@ button.fx-type-pill { font-family: var(--font-body); }
 
 .fx-tilt { transition: transform .15s ease, box-shadow .2s ease; transform-style: preserve-3d; will-change: transform; }
 
-.fx-why-icon { transition: transform var(--dur-base) var(--ease-out), background-color var(--dur-fast) ease, color var(--dur-fast) ease; }
+.fx-why-icon { transition: transform .24s var(--ease-out), background-color .18s ease, color .18s ease; }
 @media (hover: hover) and (pointer: fine) {
     .fx-why-item:hover .fx-why-icon { transform: scale(1.08) rotate(-4deg); background: var(--gold); color: #fff; }
 }
 
 .fx-progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--gold); width: 0%; z-index: 100; }
 
-.step-pin .marker { transition: background-color var(--dur-base) ease, color var(--dur-base) ease, transform var(--dur-base) var(--ease-out), border-color var(--dur-base) ease; }
+.step-pin .marker { transition: background-color .24s ease, color .24s ease, transform .24s var(--ease-out), border-color .24s ease; }
 .step-pin.is-active .marker { background: var(--navy); color: #fff; border-color: var(--navy); transform: scale(1.1); }
 .step-pin.is-active h4 { color: var(--gold-deep); }
 
@@ -937,10 +912,10 @@ button.fx-type-pill { font-family: var(--font-body); }
     background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--ok);
     border-radius: var(--radius-sm); box-shadow: var(--shadow-md); padding: 12px 16px; font-size: .9rem;
     display: flex; align-items: flex-start; gap: 10px; color: var(--text);
-    transform: translateX(110%); opacity: 0; animation: fx-toast-in .4s var(--ease-drawer) forwards;
+    transform: translateX(110%); opacity: 0; animation: fx-toast-in .4s var(--ease-out) forwards;
 }
 .fx-toast.fx-toast-danger { border-left-color: var(--danger); }
-/* Exits along the same path it entered (spatial consistency), and faster than it came in. */
+/* leaves by the same side it came in, a bit faster */
 .fx-toast.is-leaving { animation: fx-toast-out .2s var(--ease-out) forwards; }
 .fx-toast button { background: none; border: none; color: var(--muted); margin-left: auto; cursor: pointer; line-height: 1; font-size: 1.1rem; }
 @keyframes fx-toast-in { to { transform: translateX(0); opacity: 1; } }
@@ -959,8 +934,7 @@ button.fx-type-pill { font-family: var(--font-body); }
     position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); z-index: 61;
     border-radius: 20px 20px 0 0; padding: 18px 20px 24px; box-shadow: var(--shadow-lg);
     max-height: 80vh; overflow-y: auto;
-    animation: fx-sheet-up .4s var(--ease-drawer);
-    overscroll-behavior: contain;
+    animation: fx-sheet-up .4s var(--ease-out);
 }
 @keyframes fx-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes fx-sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -980,7 +954,6 @@ button.fx-type-pill { font-family: var(--font-body); }
 
 .fx-sticky-bar {
     position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line);
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
     box-shadow: 0 -8px 24px rgba(16, 23, 40, .10); padding: 12px 16px; z-index: 50;
     display: none; align-items: center; justify-content: space-between; gap: 12px;
 }
@@ -1003,7 +976,7 @@ button.fx-type-pill { font-family: var(--font-body); }
     padding: 4px; border: 1px solid rgba(212, 175, 55, .35);
     opacity: 0; transform: translateY(16px) scale(.96);
     transition: opacity .3s var(--ease-out), transform .3s var(--ease-out);
-    transform-origin: left bottom; /* grows out of its corner */
+    transform-origin: left bottom;
     pointer-events: none;
 }
 .fx-help-chip.is-visible { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
@@ -1036,7 +1009,7 @@ button.fx-type-pill { font-family: var(--font-body); }
 .fx-gallery-thumbs { display: flex; gap: 8px; margin-top: 8px; overflow-x: auto; }
 .fx-gallery-thumbs img {
     width: 62px; height: 62px; object-fit: cover; border-radius: 8px; cursor: pointer;
-    opacity: .55; transition: opacity var(--dur-fast) ease, box-shadow var(--dur-fast) ease, transform var(--dur-press) var(--ease-out); flex-shrink: 0;
+    opacity: .55; transition: opacity .18s ease, box-shadow .18s ease, transform .12s var(--ease-out); flex-shrink: 0;
 }
 .fx-gallery-thumbs img:active { transform: scale(.94); }
 .fx-gallery-thumbs img.is-active { opacity: 1; box-shadow: 0 0 0 2px var(--gold); }
@@ -1208,47 +1181,14 @@ body.fx-intro-locked { overflow: hidden; }
    Reduced motion
    ========================================================================== */
 
-/* Reduced motion = gentler, not none (apple-design §14): movement, loops
-   and parallax are removed, but short opacity/color cross-fades stay so
-   state changes are still understandable. */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         animation-duration: .001ms !important;
         animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
         scroll-behavior: auto !important;
     }
-    /* entrances that matter become a plain 200ms fade */
-    .fx-toast, .fx-toast.is-leaving, .fx-sheet, .fx-sheet-backdrop, .fx-momo-check, body {
-        animation-name: fx-fade-in !important;
-        animation-duration: .2s !important;
-    }
-    .fx-toast.is-leaving { animation-direction: reverse !important; }
-    .fx-toast { transform: none; }
-    .vehicle-card:hover, .vehicle-card:hover img, .btn:hover, .btn:active, .fx-chip:hover,
-    .fx-category-card:hover, .fx-stat-tile:hover, .fx-why-item:hover .fx-why-icon,
-    .fx-footer-social a:hover, .step-pin.is-active .marker { transform: none !important; }
-    .fx-help-chip { transform: none; }
+    .vehicle-card:hover, .btn:hover, .btn:active { transform: none !important; }
     .fx-reveal { opacity: 1 !important; transform: none !important; }
     .fx-split .fx-word { filter: none; }
-}
-
-/* Reduced transparency / increased contrast: frost the glass navbar solid. */
-@media (prefers-reduced-transparency: reduce) {
-    .fx-navbar { background: var(--navy); -webkit-backdrop-filter: none; backdrop-filter: none; }
-}
-@media (prefers-contrast: more) {
-    .fx-navbar { background: var(--navy); -webkit-backdrop-filter: none; backdrop-filter: none; border-bottom-color: rgba(255, 255, 255, .4); }
-    :root { --line: #8C96AB; --muted: #3E4655; }
-    :root[data-theme="night"] { --line: rgba(255, 255, 255, .4); --muted: #C9D1E6; }
-}
-
-/* Native cross-document page transition (Chrome/Edge/Safari 18+): a short
-   cross-fade with zero added latency, replacing the old JS 150ms hold. */
-@view-transition { navigation: auto; }
-::view-transition-old(root), ::view-transition-new(root) {
-    animation-duration: .18s;
-    animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
-}
-@media (prefers-reduced-motion: reduce) {
-    @view-transition { navigation: none; }
 }

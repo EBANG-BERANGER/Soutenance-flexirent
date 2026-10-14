@@ -58,11 +58,11 @@ class ProfileController extends Controller
 
         $user->forceFill([
             'password' => Hash::make($validated['password']),
-            // invalidates "remember me" cookies issued before the change
+            // old "remember me" cookies stop working
             'remember_token' => \Illuminate\Support\Str::random(60),
         ])->save();
 
-        // new session id: an old, possibly stolen session id stops working
+        // new session id after a password change
         $request->session()->regenerate();
 
         return back()->with('status', 'Your password has been changed.');

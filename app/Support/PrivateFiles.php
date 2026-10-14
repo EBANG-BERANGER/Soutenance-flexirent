@@ -5,33 +5,28 @@ namespace App\Support;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Sensitive files (rental contracts, partner ID / business documents) live
- * on the private "local" disk (storage/app/private), which has no public
- * URL: they can only be reached through a controller that checks who is
- * asking. Older files were written to the public disk, where anyone could
- * open /storage/contracts/reservation-1.pdf, -2.pdf, ... directly; this
- * helper moves such a file to the private disk the first time it's used.
+ * Contracts and partner documents contain personal data (ID numbers,
+ * driving licences), so they are saved on the private disk
+ * (storage/app/private) instead of the public one. Files on the private
+ * disk have no URL: they can only be downloaded through a controller that
+ * checks who is asking.
  */
 class PrivateFiles
 {
-    public const DISK = 'local';
-
-    /** Make sure $path is on the private disk; returns false if it exists nowhere. */
+    // Old files were saved on the public disk: move them to the private disk.
     public static function ensurePrivate(?string $path): bool
     {
         if (! $path) {
             return false;
         }
 
-        $private = Storage::disk(self::DISK);
-        if ($private->exists($path)) {
+        if (Storage::disk('local')->exists($path)) {
             return true;
         }
 
-        $public = Storage::disk('public');
-        if ($public->exists($path)) {
-            $private->put($path, $public->get($path));
-            $public->delete($path);
+        if (Storage::disk('public')->exists($path)) {
+            Storage::disk('local')->put($path, Storage::disk('public')->get($path));
+            Storage::disk('public')->delete($path);
 
             return true;
         }
@@ -41,10 +36,9 @@ class PrivateFiles
 
     public static function delete(?string $path): void
     {
-        if (! $path) {
-            return;
+        if ($path) {
+            Storage::disk('local')->delete($path);
+            Storage::disk('public')->delete($path);
         }
-        Storage::disk(self::DISK)->delete($path);
-        Storage::disk('public')->delete($path);
     }
 }
