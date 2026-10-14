@@ -24,6 +24,9 @@
                         .catch(() => { this.error = true; });
                 },
                 init() {
+                    // Only in demo mode (MOMO_SIMULATION). Otherwise the
+                    // payment stays pending until an admin confirms it.
+                    if (!@json($simulationEnabled)) return;
                     // Mirrors the delay a real MTN MoMo / Airtel Money push
                     // confirmation would take once the client approves it.
                     const delay = 4000 + Math.random() * 3000;
@@ -52,14 +55,19 @@
                         <span class="fx-spinner"></span>
                         <span class="text-muted small">Waiting for confirmation&hellip;</span>
                     </div>
-                    @if(app()->environment('local'))
+                    @if($simulationEnabled)
                     <button type="button" class="btn btn-outline-light btn-sm mt-3" @click="simulate()">
                         Simulate confirmation now
                     </button>
-                    @endif
                     <p class="text-muted mt-3 mb-0" style="font-size:.75rem;">
                         Demo simulation &mdash; no live MTN MoMo / Airtel Money merchant account is connected yet.
                     </p>
+                    @else
+                    <p class="text-muted mt-3 mb-0 small">
+                        Once your payment is received, FlexiRent confirms it and your reservation and contract appear in
+                        <a href="{{ route('reservations.index') }}">My reservations</a>.
+                    </p>
+                    @endif
                 </div>
             </template>
 

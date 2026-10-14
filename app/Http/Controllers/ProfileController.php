@@ -22,7 +22,7 @@ class ProfileController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:50', 'alpha_dash', 'unique:users,username,' . $user->id],
             'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'phone' => ['nullable', 'string', 'max:20'],
+            'phone' => ['nullable', 'string', 'max:20', 'regex:/^\+[1-9]\d{0,3}[\s\d]{6,14}$/'],
             'address' => ['nullable', 'string', 'max:255'],
             'profile_photo' => ['nullable', 'image', 'max:2048'],
         ]);
@@ -56,7 +56,14 @@ class ProfileController extends Controller
             'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
         ]);
 
-        $user->update(['password' => Hash::make($validated['password'])]);
+        $user->forceFill([
+            'password' => Hash::make($validated['password']),
+            // invalidates "remember me" cookies issued before the change
+            'remember_token' => \Illuminate\Support\Str::random(60),
+        ])->save();
+
+        // new session id: an old, possibly stolen session id stops working
+        $request->session()->regenerate();
 
         return back()->with('status', 'Your password has been changed.');
     }

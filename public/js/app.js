@@ -523,16 +523,28 @@ function initToasts() {
         if (errors.length === 1) {
             showToast(wrap, errors[0], 'danger');
         } else if (errors.length > 1) {
-            const list = '<ul class="mb-0 ps-3">' + errors.map((e) => '<li>' + e + '</li>').join('') + '</ul>';
+            // Built as DOM nodes, never as an HTML string: messages can echo
+            // user-supplied text (names, titles), which must not run as HTML.
+            const list = document.createElement('ul');
+            list.className = 'mb-0 ps-3';
+            errors.forEach((e) => {
+                const li = document.createElement('li');
+                li.textContent = e;
+                list.appendChild(li);
+            });
             showToast(wrap, list, 'danger');
         }
     } catch (e) { /* no errors payload */ }
 }
 
-function showToast(wrap, html, type) {
+function showToast(wrap, content, type) {
     const toast = document.createElement('div');
     toast.className = 'fx-toast' + (type === 'danger' ? ' fx-toast-danger' : '');
-    toast.innerHTML = '<span>' + html + '</span>';
+    // SECURITY: text goes in via textContent (no innerHTML) to rule out XSS.
+    const body = document.createElement('span');
+    if (content instanceof Node) body.appendChild(content);
+    else body.textContent = String(content);
+    toast.appendChild(body);
 
     const closeBtn = document.createElement('button');
     closeBtn.type = 'button';
@@ -542,7 +554,7 @@ function showToast(wrap, html, type) {
     toast.appendChild(closeBtn);
 
     wrap.appendChild(toast);
-    const lifespan = html.indexOf('<ul') !== -1 ? 9000 : 5000;
+    const lifespan = content instanceof Node ? 9000 : 5000;
     setTimeout(() => dismissToast(toast), lifespan);
 }
 

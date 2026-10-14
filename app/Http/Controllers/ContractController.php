@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Reservation;
+use App\Support\PrivateFiles;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -19,7 +20,8 @@ class ContractController extends Controller
 
         $contract = $reservation->contract;
         abort_if(! $contract, 404, 'Contract not yet generated for this reservation.');
+        abort_unless(PrivateFiles::ensurePrivate($contract->pdf_path), 404);
 
-        return Storage::disk('public')->download($contract->pdf_path, "contract-{$reservation->id}.pdf");
+        return Storage::disk(PrivateFiles::DISK)->download($contract->pdf_path, "contract-{$reservation->id}.pdf");
     }
 }

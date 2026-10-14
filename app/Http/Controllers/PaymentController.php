@@ -102,7 +102,9 @@ class PaymentController extends Controller
             return redirect()->route('reservations.index')->with('status', 'This payment has already been confirmed.');
         }
 
-        return view('reservations.payment-confirming', compact('reservation', 'payment'));
+        $simulationEnabled = (bool) config('services.mtn_momo.simulation');
+
+        return view('reservations.payment-confirming', compact('reservation', 'payment', 'simulationEnabled'));
     }
 
     /**
@@ -113,6 +115,9 @@ class PaymentController extends Controller
      */
     public function simulateConfirm(Reservation $reservation, Payment $payment)
     {
+        // SECURITY: without this gate any client could confirm their own
+        // payment (and get a contract) without paying anything.
+        abort_unless(config('services.mtn_momo.simulation'), 403, 'Payment simulation is disabled.');
         $this->authorizeOwner($reservation);
         abort_unless($payment->reservation_id === $reservation->id, 404);
         abort_unless(in_array($payment->method, ['mtn_momo', 'airtel_money']), 422);

@@ -24,3 +24,10 @@ Homestead.yaml
 Thumbs.db
 
 .claude/
+
+# Never commit runtime data or database dumps (personal data, password hashes, session ids)
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/logs/*.log
+/database/*.sql
+*.sql.gz

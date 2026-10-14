@@ -48,7 +48,7 @@
                 <td>{{ $p->isIndividual() ? $p->national_id_number : $p->tin }}</td>
                 <td>
                     @if($p->documents_path)
-                        <a href="{{ asset('storage/' . $p->documents_path) }}" target="_blank" rel="noopener">View document</a>
+                        <a href="{{ route('admin.partners.document', $p) }}" target="_blank" rel="noopener">View document</a>
                     @else
                         <span class="text-muted">None</span>
                     @endif

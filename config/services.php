@@ -39,6 +39,11 @@ return [
         'merchant_number' => env('MTN_MOMO_MERCHANT_NUMBER'),
         'api_key' => env('MTN_MOMO_API_KEY'),
         'api_secret' => env('MTN_MOMO_API_SECRET'),
+        // SECURITY: when true, the client's own browser can mark a Mobile
+        // Money payment as paid (demo portal, no real money moves). Off by
+        // default outside local development; set MOMO_SIMULATION=true only
+        // for a supervised demo, then switch it back off.
+        'simulation' => (bool) env('MOMO_SIMULATION', env('APP_ENV') === 'local'),
     ],
 
     'airtel_money' => [

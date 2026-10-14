@@ -29,7 +29,7 @@ class ContractMail extends Mailable implements ShouldQueue
     public function attachments(): array
     {
         return [
-            Attachment::fromPath(Storage::disk('public')->path($this->contract->pdf_path))
+            Attachment::fromPath(Storage::disk(\App\Support\PrivateFiles::DISK)->path($this->contract->pdf_path))
                 ->as("flexirent-contract-{$this->contract->reservation_id}.pdf")
                 ->withMime('application/pdf'),
         ];

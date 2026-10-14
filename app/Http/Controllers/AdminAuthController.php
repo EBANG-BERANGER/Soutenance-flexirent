@@ -34,33 +34,19 @@ class AdminAuthController extends Controller
             'password' => ['required'],
         ]);
 
-        // Told apart deliberately (account not found vs. wrong password)
-        // instead of one generic "credentials don't match" message, per
-        // product decision: this app doesn't need to guard against
-        // account-enumeration the way a bank login would.
+        // SECURITY: the admin portal is the most valuable target, so it
+        // never reveals whether an email exists or which half was wrong;
+        // one generic message for unknown email, wrong password or a
+        // non-admin account (no way to map who the administrators are).
         $user = User::where('email', $credentials['email'])->first();
 
-        if (! $user) {
+        if (! $user || ! Hash::check($credentials['password'], $user->password) || ! $user->isAdmin()) {
             return back()->withErrors([
-                'email' => 'No account found with that email address.',
-            ])->onlyInput('email');
-        }
-
-        if (! Hash::check($credentials['password'], $user->password)) {
-            return back()->withErrors([
-                'email' => 'Incorrect password.',
+                'email' => 'These credentials do not match an administrator account.',
             ])->onlyInput('email');
         }
 
         Auth::login($user);
-
-        if (! Auth::user()->isAdmin()) {
-            Auth::logout();
-
-            return back()->withErrors([
-                'email' => 'This portal is for administrators only. Use the regular login page instead.',
-            ])->onlyInput('email');
-        }
 
         if (Auth::user()->is_suspended) {
             Auth::logout();
@@ -84,8 +70,11 @@ class AdminAuthController extends Controller
     {
         $request->validate(['email' => ['required', 'email']]);
 
+        // Same answer whether or not the email belongs to an admin, so the
+        // form can't be used to discover administrator addresses.
+        $genericStatus = 'If this email belongs to an administrator account, a reset link has been sent to it.';
         if (! User::where('email', $request->email)->where('role', 'admin')->exists()) {
-            return back()->withErrors(['email' => self::NOT_ADMIN_MESSAGE]);
+            return back()->with('status', $genericStatus);
         }
 
         try {
@@ -96,8 +85,8 @@ class AdminAuthController extends Controller
             return back()->withErrors(['email' => 'We could not send the reset email right now. Please try again later.']);
         }
 
-        return $status === Password::RESET_LINK_SENT
-            ? back()->with('status', 'A password reset link has been sent to your email address.')
+        return $status === Password::RESET_LINK_SENT || $status === Password::RESET_THROTTLED
+            ? back()->with('status', $genericStatus)
             : back()->withErrors(['email' => __($status)]);
     }
 

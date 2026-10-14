@@ -319,7 +319,7 @@ class AdminController extends Controller
                 'company_name' => $validated['company_name'] ?? null,
                 'tin' => $validated['tin'] ?? null,
                 'national_id_number' => $validated['national_id_number'] ?? null,
-                'documents_path' => $request->file('documents_path')->store('partner-documents', 'public'),
+                'documents_path' => $request->file('documents_path')->store('partner-documents', \App\Support\PrivateFiles::DISK),
                 'status' => 'pending',
             ]);
         }
@@ -561,12 +561,27 @@ class AdminController extends Controller
 
             $query->chunk(200, function ($rows) use ($out, $toRow) {
                 foreach ($rows as $row) {
-                    fputcsv($out, $toRow($row));
+                    fputcsv($out, array_map([self::class, 'csvSafe'], $toRow($row)));
                 }
             });
 
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
+    /**
+     * SECURITY (CSV/formula injection): a client named "=HYPERLINK(...)"
+     * would otherwise run as a formula when an admin opens the export in
+     * Excel. Text cells starting with = + - @ or a control char get a
+     * leading apostrophe; real numbers are left untouched.
+     */
+    private static function csvSafe($value)
+    {
+        if (is_string($value) && $value !== '' && ! is_numeric($value) && preg_match('/^[=+\-@\t\r]/', $value)) {
+            return "'" . $value;
+        }
+
+        return $value;
     }
 
     public function updateVehicle(Request $request, Vehicle $vehicle)
@@ -1076,9 +1091,23 @@ class AdminController extends Controller
         return view('admin.contracts', compact('contracts'));
     }
 
+    /**
+     * Partner ID / business-registration document, served only to admins
+     * (route is behind role:admin). Never exposed through a public URL.
+     */
+    public function partnerDocument(Partner $partner)
+    {
+        abort_unless(\App\Support\PrivateFiles::ensurePrivate($partner->documents_path), 404);
+
+        return Storage::disk(\App\Support\PrivateFiles::DISK)->response($partner->documents_path, null, [
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'private, no-store',
+        ]);
+    }
+
     public function destroyContract(Contract $contract)
     {
-        Storage::disk('public')->delete($contract->pdf_path);
+        \App\Support\PrivateFiles::delete($contract->pdf_path);
         $reservationId = $contract->reservation_id;
         $contract->delete();
         AdminActivityLog::record('deleted', $contract, "Deleted contract for reservation #{$reservationId}");

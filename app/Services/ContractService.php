@@ -25,7 +25,9 @@ class ContractService
         ]);
 
         $path = "contracts/reservation-{$reservation->id}.pdf";
-        Storage::disk('public')->put($path, $pdf->output());
+        // Private disk: contracts hold ID and licence numbers, never public URLs.
+        Storage::disk(\App\Support\PrivateFiles::DISK)->put($path, $pdf->output());
+        Storage::disk('public')->delete($path); // drop any old public copy
 
         return Contract::updateOrCreate(
             ['reservation_id' => $reservation->id],

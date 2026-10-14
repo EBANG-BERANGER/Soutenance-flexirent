@@ -67,25 +67,25 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password')->middleware('throttle:5,1');
 
     Route::get('/reservations', [ReservationController::class, 'index'])->name('reservations.index');
     Route::get('/vehicles/{vehicle}/reserve', [ReservationController::class, 'create'])->name('reservations.create');
-    Route::post('/vehicles/{vehicle}/reserve', [ReservationController::class, 'store'])->name('reservations.store');
+    Route::post('/vehicles/{vehicle}/reserve', [ReservationController::class, 'store'])->name('reservations.store')->middleware('throttle:10,1');
 
     Route::get('/reservations/{reservation}/edit', [ReservationController::class, 'edit'])->name('reservations.edit');
     Route::put('/reservations/{reservation}', [ReservationController::class, 'update'])->name('reservations.update');
     Route::post('/reservations/{reservation}/cancel', [ReservationController::class, 'cancel'])->name('reservations.cancel');
 
     Route::get('/reservations/{reservation}/payment', [ReservationController::class, 'paymentForm'])->name('reservations.payment');
-    Route::post('/reservations/{reservation}/payment', [PaymentController::class, 'store'])->name('payments.store');
+    Route::post('/reservations/{reservation}/payment', [PaymentController::class, 'store'])->name('payments.store')->middleware('throttle:10,1');
     Route::get('/reservations/{reservation}/payment/{payment}/confirming', [PaymentController::class, 'confirming'])->name('payments.confirming');
-    Route::post('/reservations/{reservation}/payment/{payment}/simulate-confirm', [PaymentController::class, 'simulateConfirm'])->name('payments.simulate-confirm');
+    Route::post('/reservations/{reservation}/payment/{payment}/simulate-confirm', [PaymentController::class, 'simulateConfirm'])->name('payments.simulate-confirm')->middleware('throttle:10,1');
 
     Route::get('/reservations/{reservation}/contract', [ContractController::class, 'download'])->name('contracts.download');
 
     Route::get('/reservations/{reservation}/review', [ReviewController::class, 'create'])->name('reviews.create');
-    Route::post('/reservations/{reservation}/review', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::post('/reservations/{reservation}/review', [ReviewController::class, 'store'])->name('reviews.store')->middleware('throttle:10,1');
 });
 
 // Partner only
@@ -112,6 +112,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('control-panel')->name('admin.
     Route::post('/partners/{partner}/reject', [AdminController::class, 'rejectPartner'])->name('partners.reject');
     Route::post('/partners/{partner}/suspend', [AdminController::class, 'suspendPartner'])->name('partners.suspend');
     Route::post('/partners/{partner}/unsuspend', [AdminController::class, 'unsuspendPartner'])->name('partners.unsuspend');
+    Route::get('/partners/{partner}/document', [AdminController::class, 'partnerDocument'])->name('partners.document');
     Route::get('/partners/{partner}/edit', [AdminController::class, 'editPartner'])->name('partners.edit');
     Route::get('/partners/{partner}/history', [AdminController::class, 'partnerHistory'])->name('partners.history');
     Route::get('/partners/{partner}/history/export', [AdminController::class, 'partnerHistoryExport'])->name('partners.history.export');

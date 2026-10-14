@@ -21,6 +21,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // client IP Laravel logs/rate-limits on would reflect the proxy,
         // not the real request.
         $middleware->trustProxies(at: '*');
+
+        $middleware->web(append: [
+            \App\Http\Middleware\EnsureAccountIsActive::class,
+            \App\Http\Middleware\SecurityHeaders::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -45,7 +45,7 @@
     <div class="mb-3">
         <label class="form-label d-block">Supporting document</label>
         @if($partner->documents_path)
-            <a href="{{ asset('storage/' . $partner->documents_path) }}" target="_blank" rel="noopener">View current document</a>
+            <a href="{{ route('admin.partners.document', $partner) }}" target="_blank" rel="noopener">View current document</a>
         @else
             <span class="text-muted">None on file</span>
         @endif
