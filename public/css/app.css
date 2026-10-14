@@ -1,0 +1,1149 @@
+/* ==========================================================================
+   FlexiRent design system
+   Palette, type and the "route line" signature motif validated in the
+   design plan. Bootstrap 5 stays loaded for grid/utility classes and form
+   resets, but every visual surface below (buttons, cards, navbar, badges,
+   forms) is reworked so nothing reads as stock Bootstrap.
+   ========================================================================== */
+
+[x-cloak] { display: none !important; }
+
+:root {
+    /* ink - the dark anchor (headings, footer, admin sidebar), matches the logo's navy field */
+    --navy: #101728;
+    --navy-deep: #0B1220;
+    --navy-900: #060B16;
+    /* true gold - the primary accent, matching the shield/wreath in the FlexiRent logo */
+    --gold: #C7962C;
+    --gold-deep: #96721C;
+    /* warm pale-gold wash - secondary accent, used for section backgrounds and badges */
+    --sun: #FBF1DD;
+    --sun-deep: #C7962C;
+    /* amber, reserved strictly for star ratings */
+    --star: #F5B400;
+    --bg: #FFFFFF;
+    --surface: #FFFFFF;
+    --surface-2: #F3F6FB;
+    --text: #101728;
+    --muted: #5B6472;
+    --line: #C7CEDC;
+    --ok: #1C8A54;
+    --warn: #D98E2B;
+    --danger: #C23B3B;
+    --shadow-sm: 0 1px 2px rgba(16, 23, 40, .07);
+    --shadow-md: 0 10px 28px rgba(16, 23, 40, .10);
+    --shadow-lg: 0 24px 56px rgba(16, 23, 40, .18);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    /* pale gold, reserved for form focus states + floating labels */
+    --gold-accent: #C7962C;
+    --gold-accent-soft: rgba(199, 150, 44, .18);
+    /* bright highlight gold, used for glow effects (intro HUD, hover states) */
+    --neon-cyan: #D4AF37;
+    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-body: 'General Sans', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ==========================================================================
+   Night theme
+   Set on <html data-theme="night"> by an inline script in <head> (before
+   first paint, so there's no flash) and kept in sync every 5 min by
+   initDayNightTheme() in app.js, based on the real hour in Kigali. Only
+   the surface/text tokens change: --navy/--gold and the rest of the brand
+   palette stay fixed in both themes, same as any light/dark system keeps
+   its logo colors constant and only recolors backgrounds/text around them.
+   Every rule below already reads its colors through these variables, so
+   this block is almost the entire dark theme; the handful of exceptions
+   (Bootstrap's own white form/table/alert defaults, a few fixed-navy badges)
+   get explicit patches further down, each one commented where it appears.
+   ========================================================================== */
+:root[data-theme="night"] {
+    --bg: #060B16;
+    --surface: #101B33;
+    --surface-2: #16223F;
+    --text: #F4F1E8;
+    --muted: #99A4C2;
+    --line: rgba(255, 255, 255, .12);
+}
+
+/* ---------- base ---------- */
+html { scroll-behavior: smooth; }
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.55;
+    opacity: 0;
+    animation: fx-page-in .35s ease forwards;
+}
+@keyframes fx-page-in { to { opacity: 1; } }
+h1, h2, h3, h4, h5, .fx-brand {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text);
+}
+a { color: var(--text); }
+a:hover { color: var(--gold-deep); }
+::selection { background: rgba(199, 150, 44, .18); color: var(--text); }
+
+.fx-accent { font-style: italic; color: var(--gold); }
+
+:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.fx-verify-banner {
+    background: #fff7e6; color: #8a5a00; border-bottom: 1px solid #f0dca8;
+    text-align: center; font-size: .85rem; padding: 9px 16px;
+}
+.fx-verify-banner .btn-link-inline {
+    background: none; border: none; padding: 0; color: var(--gold-deep); font-weight: 600;
+    text-decoration: underline; font-size: .85rem; cursor: pointer;
+}
+
+/* Page content column, wider than Bootstrap's default .container so the
+   site actually fills large screens, matching the full-bleed hero/footer
+   sections instead of leaving big dead margins on the sides. */
+.fx-page { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+
+/* Back link shown on every page except the homepage */
+.fx-back-link {
+    display: inline-flex; align-items: center; gap: 6px; margin-bottom: 18px;
+    color: var(--muted); font-size: .88rem; font-weight: 600; text-decoration: none;
+    padding: 6px 4px; border-radius: 8px; transition: color .15s ease, background-color .15s ease;
+}
+.fx-back-link:hover { color: var(--gold-deep); background: var(--surface-2); }
+
+/* ---------- trust bar + navbar (dark, confident, Sixt-inspired) ---------- */
+.fx-trust-bar {
+    background: var(--gold); color: #fff; text-align: center;
+    font-size: .72rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+    padding: 7px 12px;
+}
+
+.fx-navbar {
+    background: var(--navy); position: sticky; top: 0; z-index: 40; box-shadow: var(--shadow-sm);
+    transition: box-shadow .25s ease;
+}
+.fx-navbar.is-scrolled { box-shadow: var(--shadow-lg); }
+.fx-navbar-inner {
+    max-width: 1400px; margin: 0 auto; padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    flex-wrap: wrap;
+    transition: padding .25s ease;
+}
+.fx-navbar.is-scrolled .fx-navbar-inner { padding: 9px 20px; }
+.fx-navbar.is-scrolled .fx-brand-logo { width: 38px; height: 38px; }
+.fx-brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; font-size: 1.2rem; font-weight: 600; font-family: var(--font-display); }
+.fx-brand:hover { color: #fff; }
+.fx-brand:hover .fx-brand-logo { box-shadow: 0 0 14px rgba(212, 175, 55, .5); }
+.fx-brand-logo, .fx-admin-brand img {
+    width: 48px; height: 48px; border-radius: 50%; object-fit: cover;
+    display: block; border: 2px solid var(--gold); box-shadow: var(--shadow-sm);
+    transition: width .25s ease, height .25s ease, box-shadow .2s ease;
+}
+
+.fx-nav-toggle {
+    display: none; flex-direction: column; justify-content: center; gap: 4px;
+    width: 34px; height: 34px; background: none; border: 1px solid rgba(255, 255, 255, .25);
+    border-radius: 8px; cursor: pointer;
+}
+.fx-nav-toggle span { width: 16px; height: 2px; background: #fff; margin: 0 auto; display: block; border-radius: 2px; }
+
+.fx-nav-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.fx-user-chip { display: flex; align-items: center; gap: 8px; color: #fff; font-size: .9rem; margin-right: 4px; font-weight: 600; text-decoration: none; }
+.fx-user-chip:hover { color: var(--gold); }
+.fx-user-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold); }
+
+.fx-navbar .btn-outline-light { border-color: rgba(255, 255, 255, .3); color: #fff; }
+.fx-navbar .btn-outline-light:hover { background: rgba(255, 255, 255, .12); color: #fff; border-color: rgba(255, 255, 255, .5); }
+
+@media (max-width: 767px) {
+    .fx-nav-toggle { display: flex; }
+    .fx-nav-actions {
+        display: none; width: 100%; flex-direction: column; align-items: stretch;
+        gap: 8px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, .15); margin-top: 10px;
+    }
+    .fx-nav-actions.is-open { display: flex; }
+    .fx-nav-actions form { width: 100%; }
+    .fx-nav-actions .btn, .fx-nav-actions button { width: 100%; }
+}
+
+/* ---------- buttons ---------- */
+.btn {
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-family: var(--font-body);
+    padding: 8px 18px;
+    transition: transform .15s ease, box-shadow .2s ease, background-color .15s ease, border-color .15s ease;
+    border-width: 1.5px;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0) scale(.97); }
+
+.btn-gold {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #fff;
+    border-radius: 100px;
+    position: relative;
+    overflow: hidden;
+}
+.btn-gold:hover { background: var(--gold-deep); border-color: var(--gold-deep); color: #fff; box-shadow: 0 8px 20px rgba(199, 150, 44, .3), 0 0 22px rgba(212, 175, 55, .35); }
+.btn-gold::after {
+    content: ''; position: absolute; top: 0; left: -75%; width: 50%; height: 100%;
+    background: linear-gradient(115deg, transparent, rgba(255, 255, 255, .4), transparent);
+    transform: skewX(-20deg); transition: left .55s ease; pointer-events: none;
+}
+.btn-gold:hover::after { left: 125%; }
+
+.btn-navy {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: #fff;
+    border-radius: 100px;
+}
+.btn-navy:hover { background: var(--navy-deep); border-color: var(--navy-deep); color: #fff; box-shadow: 0 8px 20px rgba(10, 18, 32, .3); }
+
+.btn-outline-light { border-color: var(--line); color: var(--text); border-radius: 100px; }
+.btn-outline-light:hover { background: var(--surface-2); color: var(--text); }
+
+.text-gold { color: var(--gold-deep); }
+
+/* ---------- cards ---------- */
+.card {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Image-first vehicle card: one big photo, name + price as a caption
+   overlaid at the bottom, no spec line: the photo does the selling. */
+.vehicle-card {
+    position: relative; display: block; height: 320px;
+    border-radius: var(--radius-md); overflow: hidden;
+    box-shadow: var(--shadow-sm); text-decoration: none;
+    transition: transform .35s cubic-bezier(.2, .8, .2, 1), box-shadow .35s ease;
+}
+.vehicle-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg), 0 0 0 1px rgba(212, 175, 55, .55), 0 0 34px rgba(212, 175, 55, .4); }
+.vehicle-card img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s cubic-bezier(.2, .8, .2, 1); }
+.vehicle-card:hover img { transform: scale(1.1); }
+
+/* Light sweep on hover: a glint of light catching the car's paint, reused
+   on any card-like surface with a photo or icon (vehicle, category, feature). */
+.vehicle-card::after, .fx-category-card::after, .fx-feature-card::after {
+    content: ''; position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
+    background: linear-gradient(115deg, transparent, rgba(255, 255, 255, .38), transparent);
+    transform: skewX(-20deg); transition: left .65s ease; pointer-events: none; z-index: 2;
+}
+.vehicle-card:hover::after, .fx-category-card:hover::after, .fx-feature-card:hover::after { left: 130%; }
+.vehicle-card-caption {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 16px 14px;
+    background: linear-gradient(0deg, rgba(16, 23, 40, .82) 0%, rgba(16, 23, 40, .15) 65%, transparent 100%);
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 10px;
+}
+.vehicle-card-name { color: #fff; font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; line-height: 1.25; }
+.vehicle-card-price { color: var(--sun); font-size: .82rem; font-weight: 600; white-space: nowrap; }
+.vehicle-card-badge {
+    position: absolute; top: 12px; left: 12px; z-index: 1;
+    background: rgba(16, 23, 40, .82); color: var(--sun);
+    font-size: .72rem; font-weight: 600; letter-spacing: .02em;
+    padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(212, 175, 55, .5);
+}
+
+.auth-card { box-shadow: var(--shadow-lg); border: 1px solid var(--line); border-radius: var(--radius-lg); }
+
+/* Short auth pages (login/register/password reset) otherwise leave a card
+   floating near the top of an almost-empty viewport; center the row in the
+   remaining space instead so the page reads as a deliberate layout. */
+.row.justify-content-center:has(.auth-card) {
+    min-height: calc(100vh - 260px);
+    display: flex;
+    align-items: center;
+}
+
+/* ---------- data tables (client/partner-facing pages) ---------- */
+.fx-table-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm); overflow: hidden; padding: 6px;
+}
+.fx-table-card .table { margin-bottom: 0; }
+.table thead th {
+    font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; font-weight: 700;
+    color: var(--muted); border-bottom-width: 1px; background: var(--surface-2);
+}
+.table td, .table th { padding: 13px 14px; vertical-align: middle; }
+.table-hover tbody tr:hover { background: var(--sun); }
+
+/* Available/unavailable switch (partner's own vehicle listings) */
+.fx-switch { display: inline-flex; align-items: center; cursor: pointer; }
+.fx-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.fx-switch-track {
+    position: relative; width: 42px; height: 24px; border-radius: 100px;
+    background: var(--line); transition: background-color .2s ease; flex-shrink: 0;
+}
+.fx-switch-thumb {
+    position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 3px rgba(16, 23, 40, .3); transition: left .2s ease;
+}
+.fx-switch input:checked + .fx-switch-track { background: var(--ok); }
+.fx-switch input:checked + .fx-switch-track .fx-switch-thumb { left: 20px; }
+.fx-switch input:focus-visible + .fx-switch-track { outline: 2px solid var(--gold-accent); outline-offset: 2px; }
+
+/* ---------- forms ---------- */
+.form-control, .form-select, textarea.form-control {
+    border-radius: var(--radius-md);
+    border-width: 1.5px;
+    border-color: var(--line);
+    font-family: var(--font-body);
+    transition: border-color .18s ease, box-shadow .18s ease;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--gold-accent);
+    box-shadow: 0 0 0 3px var(--gold-accent-soft);
+}
+
+/* ---------- floating labels ----------
+   Opt-in wrapper: <div class="fx-field"><label>…</label><input class="form-control">…</div>
+   State is driven by JS (initFloatingLabels in app.js) toggling .is-filled /
+   .is-focused on the wrapper, rather than CSS-only :placeholder-shown, so it
+   keeps working through autofill and the password-visibility-toggle script
+   which re-parents the input under an extra wrapper. */
+.fx-field { position: relative; }
+.fx-field > label {
+    position: absolute; left: 14px; top: 13px; margin: 0; z-index: 2;
+    font-size: .95rem; color: var(--muted); pointer-events: none;
+    background: var(--surface); padding: 0 4px; border-radius: 4px;
+    max-width: calc(100% - 24px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    transform-origin: left top;
+    transition: top .18s ease, transform .18s ease, font-size .18s ease, color .18s ease;
+}
+.fx-field > .form-control,
+.fx-field > .form-select,
+.fx-field > .fx-password-wrap > .form-control {
+    padding-top: 1.05rem;
+    padding-bottom: .45rem;
+}
+.fx-field.is-filled > label,
+.fx-field.is-focused > label {
+    top: 0;
+    transform: translateY(-50%) scale(.82);
+    color: var(--gold-accent);
+    font-weight: 600;
+}
+@media (prefers-reduced-motion: reduce) {
+    .fx-field > label { transition: none; }
+}
+
+.fx-password-wrap { position: relative; }
+.fx-password-wrap input[type="password"], .fx-password-wrap input[type="text"] { padding-right: 42px; }
+.fx-password-toggle {
+    position: absolute; top: 50%; right: 4px; transform: translateY(-50%);
+    background: none; border: none; padding: 6px; color: var(--muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; border-radius: 6px;
+}
+.fx-password-toggle:hover { color: var(--text); background: var(--surface-2); }
+
+/* Real-time password strength meter shown under the registration password field */
+.fx-pwd-strength { margin-top: 7px; }
+.fx-pwd-strength-track { height: 6px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.fx-pwd-strength-fill {
+    height: 100%; width: 0%; border-radius: 4px; background: var(--danger);
+    transition: width .25s ease, background-color .25s ease;
+}
+.fx-pwd-strength-label { display: block; font-size: .78rem; font-weight: 600; margin-top: 4px; color: var(--muted); }
+.fx-pwd-strength[data-level="weak"] .fx-pwd-strength-fill { background: var(--danger); }
+.fx-pwd-strength[data-level="medium"] .fx-pwd-strength-fill { background: var(--warn); }
+.fx-pwd-strength[data-level="strong"] .fx-pwd-strength-fill { background: var(--ok); }
+.fx-pwd-strength[data-level="weak"] .fx-pwd-strength-label { color: var(--danger); }
+.fx-pwd-strength[data-level="medium"] .fx-pwd-strength-label { color: var(--warn); }
+.fx-pwd-strength[data-level="strong"] .fx-pwd-strength-label { color: var(--ok); }
+@media (prefers-reduced-motion: reduce) {
+    .fx-pwd-strength-fill { transition: none; }
+}
+
+/* multi-photo picker (accumulates files across repeated selections) */
+.fx-photo-picker { border: 1.5px dashed var(--line); border-radius: var(--radius-md); padding: 14px; }
+.fx-photo-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+.fx-photo-grid:empty { margin-bottom: 0; }
+.fx-photo-thumb { position: relative; width: 84px; height: 84px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); }
+.fx-photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fx-photo-thumb button { position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; border-radius: 50%; border: none; background: rgba(16, 23, 40, .75); color: #fff; line-height: 1; cursor: pointer; font-size: .9rem; }
+.fx-photo-thumb button:hover { background: var(--danger); }
+.fx-photo-thumb .fx-photo-cover { position: absolute; left: 0; right: 0; bottom: 0; background: rgba(16, 23, 40, .75); color: #fff; font-size: .62rem; text-align: center; padding: 2px 0; text-transform: uppercase; letter-spacing: .04em; }
+
+/* payment: full vs deposit choice */
+.fx-pay-options { display: flex; flex-direction: column; gap: 10px; }
+.fx-pay-option {
+    display: flex; align-items: flex-start; gap: 12px; border: 1.5px solid var(--line); border-radius: var(--radius-md);
+    padding: 12px 14px; cursor: pointer; transition: border-color .15s ease, background-color .15s ease;
+}
+.fx-pay-option:hover { border-color: var(--gold); }
+.fx-pay-option:has(input:checked) { border-color: var(--gold); background: var(--sun); }
+.fx-pay-option input { margin-top: 4px; accent-color: var(--gold); flex-shrink: 0; }
+
+/* MoMo USSD instruction box */
+.fx-momo-box { background: var(--navy); color: #fff; border-radius: var(--radius-md); padding: 16px; margin-top: 14px; }
+.fx-momo-label { font-size: .85rem; color: #c3cbdc; margin-bottom: 8px; }
+.fx-momo-label strong { color: #fff; }
+.fx-momo-code {
+    font-family: var(--font-display); font-size: 1.5rem; letter-spacing: .03em; color: var(--gold);
+    background: rgba(255, 255, 255, .08); border-radius: 8px; padding: 10px 14px; margin-bottom: 10px;
+    word-break: break-all;
+}
+
+/* MoMo confirmation portal (payment-confirming page) */
+.fx-momo-phone {
+    position: relative; width: 72px; height: 72px; margin: 0 auto 18px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--sun); color: var(--gold-deep); border-radius: 50%;
+}
+.fx-momo-phone-pulse {
+    position: absolute; inset: 0; border-radius: 50%; background: var(--gold);
+    opacity: .35; animation: fx-momo-pulse 1.6s ease-out infinite;
+}
+@keyframes fx-momo-pulse {
+    0% { transform: scale(1); opacity: .35; }
+    100% { transform: scale(1.7); opacity: 0; }
+}
+.fx-momo-check {
+    width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 50%;
+    background: var(--ok); color: #fff; font-size: 1.8rem; line-height: 64px;
+    animation: fx-momo-pop .3s ease;
+}
+@keyframes fx-momo-pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+    .fx-momo-phone-pulse { animation: none; opacity: .35; }
+    .fx-momo-check { animation: none; }
+}
+
+/* branded loading spinner - inherits the current text color so it reads on any button */
+.fx-spinner {
+    display: inline-block; width: 15px; height: 15px; border-radius: 50%;
+    border: 2px solid currentColor; border-top-color: transparent; opacity: .85;
+    animation: fx-spin .7s linear infinite; vertical-align: -3px; margin-right: 6px;
+}
+@keyframes fx-spin { to { transform: rotate(360deg); } }
+
+/* page transition fade-out on internal navigation */
+body.fx-leaving { opacity: 0; transition: opacity .15s ease; }
+
+/* clickable filter chips (category pills, etc.) */
+.fx-chip {
+    display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid var(--line);
+    background: var(--surface); border-radius: 20px; padding: 6px 14px; font-size: .85rem;
+    cursor: pointer; transition: border-color .15s ease, background-color .15s ease, transform .15s ease;
+}
+.fx-chip:hover { transform: translateY(-1px); border-color: var(--gold); }
+.fx-chip.is-active { background: var(--navy); border-color: var(--navy); color: #fff; }
+
+/* ---------- stat tiles (partner dashboard + admin) ---------- */
+.fx-stat-tile {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 16px 18px;
+    box-shadow: var(--shadow-sm); height: 100%; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.fx-stat-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--gold); }
+.fx-stat-tile small { color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; }
+.fx-stat-tile h3, .fx-stat-tile h4 { margin: 6px 0 0; font-variant-numeric: tabular-nums; }
+
+/* ---------- badges ---------- */
+.badge { font-weight: 600; letter-spacing: .01em; border-radius: 20px; padding: 5px 11px; }
+.bg-secondary { background-color: var(--surface-2) !important; color: var(--muted) !important; }
+
+/* ==========================================================================
+   Signature motif: the route line
+   A dashed gold rule that is only ever used to connect steps or mark an
+   active state - never as a plain decorative divider.
+   ========================================================================== */
+
+.route-line {
+    height: 2px;
+    background-image: repeating-linear-gradient(90deg, var(--gold) 0 14px, transparent 14px 24px);
+}
+
+.steps-route { position: relative; display: flex; justify-content: space-between; gap: 16px; margin-top: 30px; flex-wrap: wrap; }
+.steps-route::before {
+    content: ""; position: absolute; top: 19px; left: 6%; right: 6%; height: 2px;
+    background-image: repeating-linear-gradient(90deg, var(--gold) 0 12px, transparent 12px 20px);
+}
+/* Fills in solid as the user scrolls through the steps, driven by
+   initStepHighlight() in app.js reusing the same IntersectionObserver that
+   toggles each step's active state. */
+.steps-route-progress {
+    position: absolute; top: 19px; left: 6%; height: 2px; width: 0%;
+    background: var(--gold); z-index: 1; transition: width .5s cubic-bezier(.2, .8, .2, 1);
+}
+@media (max-width: 767px) { .steps-route-progress { display: none; } }
+@media (max-width: 767px) {
+    .steps-route { flex-direction: column; gap: 26px; }
+    .steps-route::before { display: none; }
+}
+.step-pin { position: relative; flex: 1; min-width: 160px; text-align: center; background: var(--bg); padding: 0 6px; }
+.step-pin .marker {
+    width: 44px; height: 44px; border-radius: 50%; background: var(--surface); color: var(--text);
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-display); font-size: 1.05rem;
+    margin: 0 auto 12px; border: 1.5px solid var(--line); box-shadow: var(--shadow-sm);
+}
+.step-pin h4 { font-size: 1.05rem; margin-bottom: 4px; }
+.step-pin p { color: var(--muted); font-size: .9rem; margin: 0; }
+
+/* ==========================================================================
+   Home hero
+   ========================================================================== */
+
+.fx-hero-breakout { width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; }
+
+.fx-hero {
+    background: linear-gradient(180deg, var(--sun) 0%, var(--bg) 100%);
+    padding: 56px 20px 70px;
+}
+.fx-hero-inner {
+    max-width: 1400px; margin: 0 auto;
+    display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .8fr); gap: 48px; align-items: center;
+}
+@media (max-width: 900px) { .fx-hero-inner { grid-template-columns: 1fr; gap: 36px; } }
+
+.fx-hero .badges { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+/* Bold, confident color-block badge (Sixt-style trust marker) rather than
+   the quiet outline treatment used for the other hero eyebrows. */
+.fx-hero .fx-eyebrow-strong {
+    background: var(--navy); border-color: var(--navy); color: #fff;
+    font-weight: 700; letter-spacing: .01em;
+}
+.fx-hero .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px; font-size: .72rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .04em;
+    color: var(--text);
+    background: var(--surface); border: 1px solid var(--line);
+    padding: 6px 14px; border-radius: 20px;
+}
+.fx-hero .eyebrow[data-fx-clock] { font-variant-numeric: tabular-nums; color: var(--gold-deep); border-color: rgba(212, 175, 55, .4); }
+[data-theme="night"] .fx-hero .eyebrow[data-fx-clock] { color: var(--gold); }
+.fx-hero .eyebrow .dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--ok); display: inline-block;
+    box-shadow: 0 0 0 0 rgba(28, 138, 84, .5); animation: fx-dot-pulse 2s ease-in-out infinite;
+}
+@keyframes fx-dot-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(28, 138, 84, .45); }
+    70% { box-shadow: 0 0 0 6px rgba(28, 138, 84, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(28, 138, 84, 0); }
+}
+
+.fx-hero h1 { color: var(--text); font-size: clamp(2.3rem, 5vw, 3.8rem); line-height: 1.04; margin-bottom: 18px; font-weight: 700; letter-spacing: -0.01em; }
+.fx-hero p.lead { font-family: var(--font-body); color: var(--muted); max-width: 48ch; font-size: 1.08rem; line-height: 1.6; margin-bottom: 26px; }
+.fx-hero .cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 32px; }
+
+.fx-stat-row { display: flex; gap: 28px; flex-wrap: wrap; padding-top: 22px; border-top: 1px solid var(--line); }
+.fx-stat-row > div { position: relative; padding-left: 28px; }
+.fx-stat-row > div:first-child { padding-left: 0; }
+.fx-stat-row > div:not(:first-child)::before {
+    content: ""; position: absolute; left: 0; top: 3px; bottom: 3px; width: 1px; background: var(--line);
+}
+.fx-stat-row .n { font-family: var(--font-display); font-size: 1.6rem; color: var(--text); font-variant-numeric: tabular-nums; display: block; }
+.fx-stat-row .l { font-size: .66rem; color: var(--muted); margin-top: 3px; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; }
+
+.fx-search {
+    background: var(--surface); border-radius: var(--radius-lg); padding: 16px;
+    box-shadow: var(--shadow-lg); border: 1px solid var(--line); display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, .9fr) minmax(0, .9fr) auto;
+    gap: 12px; align-items: end; margin-bottom: 28px;
+}
+.fx-search label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); display: block; margin-bottom: 5px; }
+@media (max-width: 900px) { .fx-search { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px) { .fx-search { grid-template-columns: 1fr; } }
+
+/* floating featured-vehicle card */
+/* Image-first "just the photo" hero card: no specs, no price, no button,
+   one big attractive shot with the model name as a caption, the whole
+   card is the link. */
+.fx-feature-card {
+    position: relative; display: block; overflow: hidden;
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); text-decoration: none;
+}
+.fx-feature-card img { width: 100%; height: 420px; object-fit: cover; display: block; transition: transform .5s ease; }
+.fx-feature-card:hover img { transform: scale(1.05); }
+.fx-feature-card { box-shadow: var(--shadow-lg), 0 0 0 1px rgba(212, 175, 55, .35), 0 0 40px rgba(212, 175, 55, .25); }
+.fx-feature-caption {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 22px 20px;
+    background: linear-gradient(0deg, rgba(16, 23, 40, .78) 0%, rgba(16, 23, 40, .25) 60%, transparent 100%);
+    color: #fff; font-family: var(--font-display); font-weight: 600; font-size: 1.4rem;
+}
+@media (max-width: 767px) {
+    .fx-feature-card img { height: 300px; }
+}
+
+@media (max-width: 480px) {
+    .fx-hero { padding: 40px 16px 50px; }
+    .fx-search { padding: 12px; }
+    .fx-stat-row { gap: 22px; }
+}
+
+/* ==========================================================================
+   Browse-by-category cards
+   ========================================================================== */
+
+.fx-category-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; }
+.fx-category-card {
+    position: relative; overflow: hidden;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg);
+    padding: 20px; text-decoration: none; color: var(--text);
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.fx-category-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md), 0 0 20px rgba(212, 175, 55, .3); border-color: var(--neon-cyan); }
+.fx-category-icon {
+    width: 46px; height: 46px; border-radius: 12px; background: var(--sun); color: var(--gold-deep);
+    display: flex; align-items: center; justify-content: center;
+}
+.fx-category-icon svg { width: 24px; height: 24px; }
+.fx-category-name { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; color: var(--text); }
+.fx-category-count { font-size: .82rem; color: var(--muted); }
+
+/* ==========================================================================
+   "Why FlexiRent" feature cards
+   ========================================================================== */
+
+.fx-why { background: var(--sun); padding: 64px 0; }
+
+/* Bold, poster-style color-block CTA band (Sixt-inspired): one solid,
+   high-contrast, oversized-type moment breaking the page's usual rhythm. */
+.fx-cta-band {
+    background: var(--gold); padding: 56px 20px; position: relative; overflow: hidden;
+}
+.fx-cta-eyebrow {
+    font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    color: rgba(16, 23, 40, .65); margin-bottom: 6px;
+}
+.fx-cta-headline {
+    font-family: var(--font-display); font-weight: 700; text-transform: none;
+    letter-spacing: -0.01em; line-height: .98; color: var(--navy);
+    font-size: clamp(2.4rem, 7vw, 4.8rem); margin: 0 0 26px;
+}
+.fx-eyebrow-label { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--gold-deep); margin-bottom: 8px; }
+
+.fx-filter-summary { color: var(--muted); font-size: .95rem; }
+.fx-filter-summary strong { color: var(--text); }
+
+.fx-empty-state {
+    text-align: center; padding: 40px 20px; background: var(--surface-2);
+    border-radius: var(--radius-lg); border: 1px solid var(--line);
+}
+
+/* ---------- fleet page filter bar ---------- */
+.fx-fleet-filters {
+    background: var(--surface); border-radius: var(--radius-lg); padding: 18px;
+    box-shadow: var(--shadow-md); border: 1px solid var(--line);
+    display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 16px; align-items: start;
+}
+@media (max-width: 1100px) { .fx-fleet-filters { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 767px) { .fx-fleet-filters { grid-template-columns: 1fr; } }
+
+.fx-type-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.fx-type-pill {
+    position: relative; display: inline-flex; align-items: center; gap: 6px;
+    border: 1.5px solid var(--line); border-radius: 100px; padding: 7px 16px;
+    font-size: .85rem; font-weight: 600; color: var(--muted); cursor: pointer;
+    transition: border-color .15s ease, background-color .15s ease, color .15s ease;
+}
+.fx-type-pill:has(input:checked), .fx-type-pill.is-active { border-color: var(--gold); background: var(--sun); color: var(--navy); }
+.fx-type-pill input { position: absolute; opacity: 0; width: 0; height: 0; }
+button.fx-type-pill { font-family: var(--font-body); }
+/* Clean, boxless editorial layout (Sixt-style) instead of a bordered card
+   grid: icon, headline and copy standing on their own with generous space. */
+.fx-why-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px 32px; margin-top: 36px;
+}
+@media (max-width: 767px) { .fx-why-grid { grid-template-columns: 1fr; gap: 32px; } }
+.fx-why-item { display: flex; gap: 16px; }
+.fx-why-icon {
+    width: 44px; height: 44px; border-radius: 10px; background: var(--navy); color: var(--gold);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.fx-why-icon svg { width: 21px; height: 21px; }
+.fx-why-item h5 { margin-bottom: 4px; font-size: 1.05rem; }
+.fx-why-item p { color: var(--muted); font-size: .92rem; margin: 0; }
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+.fx-footer { background: var(--navy-900); color: #b7c0d6; padding: 56px 20px 26px; margin-top: 60px; }
+.fx-footer-inner {
+    max-width: 1400px; margin: 0 auto; display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr 1fr 1.3fr; gap: 40px;
+}
+@media (max-width: 1100px) { .fx-footer-inner { grid-template-columns: 1fr 1fr 1fr; } .fx-footer-about { grid-column: 1 / -1; } }
+@media (max-width: 767px) { .fx-footer-inner { grid-template-columns: 1fr; gap: 32px; } .fx-footer-about { grid-column: auto; } }
+
+.fx-footer-brand-link { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; margin-bottom: 14px; }
+.fx-footer-brand-link .fx-brand-logo { width: 40px; height: 40px; }
+.fx-footer-brand { color: #fff; font-family: var(--font-display); font-size: 1.2rem; }
+.fx-footer p.fx-footer-tagline { color: var(--gold); font-size: .88rem; font-weight: 600; margin-bottom: 10px; max-width: none; }
+.fx-footer p { font-size: .88rem; line-height: 1.6; max-width: 34ch; }
+.fx-footer h6 { color: #fff; font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 14px; }
+.fx-footer ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.fx-footer a { color: #b7c0d6; text-decoration: none; font-size: .9rem; transition: color .15s ease; }
+.fx-footer a:hover { color: var(--gold); }
+
+.fx-footer-social { display: flex; gap: 10px; margin-top: 18px; }
+.fx-footer-social a {
+    display: flex; align-items: center; justify-content: center; width: 34px; height: 34px;
+    border-radius: 50%; background: rgba(255, 255, 255, .06); color: #b7c0d6;
+    transition: background-color .15s ease, color .15s ease, transform .15s ease;
+}
+.fx-footer-social a:hover { background: var(--gold); color: var(--navy-900); transform: translateY(-2px); }
+
+.fx-footer-newsletter p { font-size: .85rem; margin-bottom: 14px; }
+.fx-newsletter-form { display: flex; gap: 8px; flex-wrap: wrap; }
+.fx-newsletter-form input {
+    flex: 1 1 140px; min-width: 0; background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .14);
+    border-radius: var(--radius-sm); padding: 10px 12px; color: #fff; font-size: .88rem;
+}
+.fx-newsletter-form input::placeholder { color: #7c88a3; }
+.fx-newsletter-form input:focus { outline: none; border-color: var(--gold); }
+.fx-newsletter-form button {
+    background: var(--gold); color: var(--navy-900); border: none; border-radius: var(--radius-sm);
+    padding: 10px 18px; font-size: .85rem; font-weight: 700; cursor: pointer; transition: background-color .15s ease;
+}
+.fx-newsletter-form button:hover { background: var(--gold-deep); }
+
+.fx-footer-legal {
+    max-width: 1400px; margin: 40px auto 0; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, .08);
+    display: flex; justify-content: center; gap: 24px; flex-wrap: wrap;
+}
+.fx-footer-legal a { font-size: .8rem; color: #7c88a3; }
+.fx-footer-legal a:hover { color: var(--gold); }
+.fx-footer-bottom {
+    max-width: 1400px; margin: 16px auto 0; padding-top: 16px;
+    font-size: .8rem; color: #7c88a3; text-align: center;
+}
+
+/* Readable content width for simple static pages (About, Terms, Privacy...) */
+.fx-prose { max-width: 68ch; }
+.fx-prose p { margin-bottom: 1.1em; line-height: 1.7; color: var(--text); }
+.fx-prose h4 { margin-top: 1.8em; margin-bottom: .5em; font-size: 1.1rem; }
+
+/* ==========================================================================
+   Hero motion: animated wash, parallax blob, floating card, word reveal
+   ========================================================================== */
+
+.fx-hero {
+    position: relative;
+    overflow: hidden;
+    background-size: 100% 220%;
+    animation: fx-hero-drift 16s ease-in-out infinite alternate;
+    transition: background-color .8s ease;
+}
+
+/* Night mode: [data-theme="night"] on <html> already recolors --text/
+   --muted/--surface/--line site-wide (see the Night theme block near the
+   top), so the hero mostly inherits it for free. This just adds the
+   hero-specific extras: a darker background wash and (further down) the
+   sun orb turning into a moon. */
+[data-theme="night"] .fx-hero {
+    background: linear-gradient(180deg, var(--navy-deep) 0%, var(--navy-900) 100%);
+}
+@keyframes fx-hero-drift {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 0% 40%; }
+}
+.fx-hero-blob {
+    position: absolute; width: 560px; height: 560px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(212, 175, 55, .28) 0%, rgba(199, 150, 44, .16) 45%, transparent 72%);
+    top: -140px; right: -100px; pointer-events: none; z-index: 0; will-change: transform;
+    filter: blur(2px);
+}
+.fx-hero-blob.b2 {
+    top: auto; right: auto; bottom: -160px; left: -120px; width: 420px; height: 420px;
+    background: radial-gradient(circle, rgba(199, 150, 44, .18) 0%, rgba(199, 150, 44, 0) 70%);
+}
+.fx-hero-inner { position: relative; z-index: 1; }
+
+.fx-hero-copy { animation: fx-hero-in .8s cubic-bezier(.2, .8, .2, 1) both; }
+
+/* Ambient particles: a handful of gold/navy motes drifting slowly upward
+   and fading, filling the hero's negative space with continuous, cheap motion. */
+.fx-hero-particles { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.fx-hero-particles span {
+    position: absolute; width: 5px; height: 5px; border-radius: 50%;
+    background: var(--gold); opacity: 0; animation: fx-particle-drift ease-in-out infinite;
+}
+.fx-hero-particles span:nth-child(1) { left: 8%; top: 74%; animation-duration: 12s; animation-delay: 0s; }
+.fx-hero-particles span:nth-child(2) { left: 20%; top: 32%; animation-duration: 9s; animation-delay: 1.4s; background: var(--gold-deep); opacity: 0; }
+.fx-hero-particles span:nth-child(3) { left: 36%; top: 84%; animation-duration: 14s; animation-delay: 2.8s; }
+.fx-hero-particles span:nth-child(4) { left: 53%; top: 20%; animation-duration: 10s; animation-delay: .6s; }
+.fx-hero-particles span:nth-child(5) { left: 70%; top: 62%; animation-duration: 13s; animation-delay: 3.6s; background: var(--gold-deep); opacity: 0; }
+.fx-hero-particles span:nth-child(6) { left: 82%; top: 26%; animation-duration: 11s; animation-delay: 2s; }
+/* At night every particle reads as a star: brighter, cooler, no gold/navy split. */
+[data-theme="night"] .fx-hero-particles span { background: #F4F1E8; }
+@keyframes fx-particle-drift {
+    0% { transform: translateY(0) scale(1); opacity: 0; }
+    15% { opacity: .55; }
+    50% { transform: translateY(-46px) scale(1.15); }
+    85% { opacity: .12; }
+    100% { transform: translateY(-92px) scale(.8); opacity: 0; }
+}
+@media (max-width: 900px) {
+    .fx-hero-particles { display: none; }
+}
+
+/* Trust marquee: a slow, seamless auto-scrolling strip of trust points
+   between the hero and the category grid, continuous motion that doubles
+   as reinforcement of the "Why FlexiRent" points further down the page. */
+.fx-marquee {
+    background: var(--navy); overflow: hidden; padding: 13px 0; white-space: nowrap;
+}
+.fx-marquee-track {
+    display: inline-flex; gap: 28px; align-items: center; padding-left: 28px;
+    animation: fx-marquee-scroll 28s linear infinite;
+}
+.fx-marquee-track span { color: #fff; font-size: .78rem; font-weight: 600; letter-spacing: .02em; white-space: nowrap; }
+.fx-marquee-dot { color: var(--gold); }
+@keyframes fx-marquee-scroll { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+    .fx-marquee-track { animation: none; }
+}
+@keyframes fx-hero-in {
+    from { opacity: 0; transform: translateY(26px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+/* thin animated neon seam under the hero, the site's one recurring
+   "futuristic" signature */
+.fx-hero::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; z-index: 1;
+    background: linear-gradient(90deg, transparent, var(--neon-cyan), var(--gold), var(--neon-cyan), transparent);
+    background-size: 200% 100%; opacity: .55;
+    animation: fx-seam-drift 6s linear infinite;
+}
+@keyframes fx-seam-drift { to { background-position: -200% 0; } }
+
+.fx-feature-card { animation: fx-float 5.5s ease-in-out infinite; }
+@keyframes fx-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.fx-split .fx-word { display: inline-block; opacity: 0; transform: translateY(16px); animation: fx-word-in .55s cubic-bezier(.2, .8, .2, 1) forwards; }
+@keyframes fx-word-in { to { opacity: 1; transform: translateY(0); } }
+
+/* ==========================================================================
+   Micro-interactions: tilt cards, icon hover, scroll progress
+   ========================================================================== */
+
+.fx-tilt { transition: transform .15s ease, box-shadow .2s ease; transform-style: preserve-3d; will-change: transform; }
+
+.fx-why-icon { transition: transform .25s ease, background-color .25s ease, color .25s ease; }
+.fx-why-item:hover .fx-why-icon { transform: scale(1.12) rotate(-4deg); background: var(--gold); color: #fff; }
+
+.fx-progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--gold); width: 0%; z-index: 100; }
+
+.step-pin .marker { transition: background-color .3s ease, color .3s ease, transform .3s ease, border-color .3s ease; }
+.step-pin.is-active .marker { background: var(--navy); color: #fff; border-color: var(--navy); transform: scale(1.1); }
+.step-pin.is-active h4 { color: var(--gold-deep); }
+
+/* ==========================================================================
+   Skeleton loading (AJAX vehicle filter)
+   ========================================================================== */
+
+.fx-skeleton-card { border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--line); background: var(--surface); }
+.fx-skeleton-img, .fx-skeleton-line {
+    background: linear-gradient(90deg, var(--surface-2) 25%, #e7ecf5 37%, var(--surface-2) 63%);
+    background-size: 400% 100%; animation: fx-shimmer 1.4s ease infinite;
+}
+.fx-skeleton-img { height: 190px; }
+.fx-skeleton-line { height: 12px; margin: 14px 16px; border-radius: 4px; }
+.fx-skeleton-line.short { width: 40%; }
+@keyframes fx-shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+
+/* ==========================================================================
+   Toast notifications
+   ========================================================================== */
+
+.fx-toast-wrap { position: fixed; top: 16px; right: 16px; z-index: 200; display: flex; flex-direction: column; gap: 10px; max-width: 340px; }
+.fx-toast {
+    background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--ok);
+    border-radius: var(--radius-sm); box-shadow: var(--shadow-md); padding: 12px 16px; font-size: .9rem;
+    display: flex; align-items: flex-start; gap: 10px; color: var(--text);
+    transform: translateX(120%); opacity: 0; animation: fx-toast-in .35s ease forwards;
+}
+.fx-toast.fx-toast-danger { border-left-color: var(--danger); }
+.fx-toast.is-leaving { animation: fx-toast-out .3s ease forwards; }
+.fx-toast button { background: none; border: none; color: var(--muted); margin-left: auto; cursor: pointer; line-height: 1; font-size: 1.1rem; }
+@keyframes fx-toast-in { to { transform: translateX(0); opacity: 1; } }
+@keyframes fx-toast-out { to { transform: translateX(120%); opacity: 0; } }
+@media (max-width: 480px) { .fx-toast-wrap { left: 16px; right: 16px; max-width: none; top: 12px; } }
+
+/* ==========================================================================
+   Mobile filter bottom-sheet
+   ========================================================================== */
+
+.fx-sheet-backdrop {
+    position: fixed; inset: 0; background: rgba(16, 23, 40, .45); z-index: 60;
+    animation: fx-fade-in .2s ease;
+}
+.fx-sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); z-index: 61;
+    border-radius: 20px 20px 0 0; padding: 18px 20px 24px; box-shadow: var(--shadow-lg);
+    max-height: 80vh; overflow-y: auto;
+    animation: fx-sheet-up .3s cubic-bezier(.2, .8, .2, 1);
+}
+@keyframes fx-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fx-sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.fx-sheet-handle { width: 40px; height: 4px; background: var(--line); border-radius: 3px; margin: 0 auto 16px; }
+.fx-sheet-trigger { display: none; width: 100%; }
+@media (max-width: 640px) {
+    .fx-search-desktop { display: none; }
+    .fx-sheet-trigger { display: flex; }
+}
+@media (min-width: 641px) {
+    .fx-sheet, .fx-sheet-backdrop, .fx-sheet-trigger { display: none; }
+}
+
+/* ==========================================================================
+   Sticky reserve bar (vehicle detail, mobile)
+   ========================================================================== */
+
+.fx-sticky-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line);
+    box-shadow: 0 -8px 24px rgba(16, 23, 40, .10); padding: 12px 16px; z-index: 50;
+    display: none; align-items: center; justify-content: space-between; gap: 12px;
+}
+.fx-sticky-bar .price { font-family: var(--font-display); font-size: 1.1rem; color: var(--text); }
+.fx-sticky-bar .price small { display: block; font-family: var(--font-body); font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+@media (max-width: 767px) {
+    .fx-sticky-bar.is-active { display: flex; }
+    body.fx-has-sticky-bar { padding-bottom: 76px; }
+}
+
+/* ==========================================================================
+   Floating dismissible help chip (homepage)
+   ========================================================================== */
+
+.fx-help-chip {
+    position: fixed; left: 16px; bottom: 16px; z-index: 55;
+    display: flex; align-items: center; gap: 4px;
+    background: var(--navy); color: #fff; border-radius: 100px;
+    box-shadow: var(--shadow-lg), 0 0 24px rgba(212, 175, 55, .25);
+    padding: 4px; border: 1px solid rgba(212, 175, 55, .35);
+    opacity: 0; transform: translateY(16px) scale(.96);
+    transition: opacity .35s ease, transform .35s ease;
+    pointer-events: none;
+}
+.fx-help-chip.is-visible { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+.fx-help-chip-link {
+    display: flex; align-items: center; gap: 8px; color: #fff; text-decoration: none;
+    font-size: .82rem; font-weight: 600; padding: 8px 8px 8px 14px; border-radius: 100px;
+}
+.fx-help-chip-link:hover { color: var(--gold); }
+.fx-help-chip-link svg { color: var(--gold); flex-shrink: 0; }
+.fx-help-chip-close {
+    background: rgba(255, 255, 255, .08); border: none; color: #c3cbdc; width: 24px; height: 24px;
+    border-radius: 50%; line-height: 1; cursor: pointer; flex-shrink: 0; font-size: 1rem;
+    transition: background-color .15s ease, color .15s ease;
+}
+.fx-help-chip-close:hover { background: rgba(255, 255, 255, .18); color: #fff; }
+@media (max-width: 480px) {
+    .fx-help-chip-link span { display: none; }
+}
+
+/* ==========================================================================
+   Swipeable vehicle gallery
+   ========================================================================== */
+
+.fx-gallery {
+    display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch; border-radius: var(--radius-md); scrollbar-width: none;
+}
+.fx-gallery::-webkit-scrollbar { display: none; }
+.fx-gallery img { scroll-snap-align: start; flex: 0 0 100%; width: 100%; height: 300px; object-fit: cover; border-radius: var(--radius-md); }
+.fx-gallery-thumbs { display: flex; gap: 8px; margin-top: 8px; overflow-x: auto; }
+.fx-gallery-thumbs img {
+    width: 62px; height: 62px; object-fit: cover; border-radius: 8px; cursor: pointer;
+    opacity: .55; transition: opacity .2s ease, box-shadow .2s ease; flex-shrink: 0;
+}
+.fx-gallery-thumbs img.is-active { opacity: 1; box-shadow: 0 0 0 2px var(--gold); }
+
+@media (prefers-reduced-motion: reduce) {
+    .fx-hero { animation: none; }
+    .fx-feature-card { animation: none; }
+    .fx-hero-orb, .fx-hero-orb-ring { animation: none; }
+    .fx-hero-orb-wrap { transition: none; }
+    .fx-hero-particles span { animation: none; opacity: 0; }
+    .fx-marquee-track { animation: none; }
+    .fx-split .fx-word { animation: none; opacity: 1; transform: none; }
+    .fx-skeleton-img, .fx-skeleton-line { animation: none; }
+    .fx-tilt { transition: none; }
+}
+
+/* ==========================================================================
+   Scroll reveal
+   Cards and steps fade/rise into place as they enter the viewport, applied
+   via the .fx-reveal hook + a tiny IntersectionObserver in app.js.
+   ========================================================================== */
+
+.fx-reveal { opacity: 0; transform: translateY(20px); transition: opacity .6s ease, transform .6s ease; }
+.fx-reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+/* ==========================================================================
+   First-visit intro: a photo of the featured car slides across a
+   futuristic neon-on-dark HUD, then the logo fades in with a matching
+   glow. Shown once per browser session (sessionStorage), skippable on
+   click, capped at ~1.5s by JS. Stays display:none unless JS explicitly
+   activates it, so a no-JS visitor (or a failed script) never gets blocked.
+   ========================================================================== */
+
+.fx-intro-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 9999;
+    align-items: center; justify-content: center;
+    background: radial-gradient(120% 120% at 50% 50%, var(--navy) 0%, var(--navy-deep) 55%, var(--navy-900) 100%);
+    overflow: hidden; cursor: pointer;
+}
+.fx-intro-overlay.is-active { display: flex; }
+.fx-intro-overlay.is-hidden { opacity: 0; pointer-events: none; transition: opacity .3s ease; }
+body.fx-intro-locked { overflow: hidden; }
+
+.fx-intro-grid {
+    position: absolute; inset: -10%; z-index: 0; opacity: .35;
+    background-image:
+        linear-gradient(rgba(212, 175, 55, .16) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(212, 175, 55, .16) 1px, transparent 1px);
+    background-size: 44px 44px;
+    -webkit-mask-image: radial-gradient(60% 60% at 50% 50%, #000 0%, transparent 75%);
+    mask-image: radial-gradient(60% 60% at 50% 50%, #000 0%, transparent 75%);
+    animation: fx-intro-grid-drift 6s linear infinite;
+}
+@keyframes fx-intro-grid-drift { from { background-position: 0 0; } to { background-position: 44px 44px; } }
+
+.fx-intro-car {
+    position: absolute; z-index: 1; top: 50%; left: -30%; width: 220px;
+    transform: translateY(-50%); opacity: 0;
+    animation: fx-intro-drive .85s cubic-bezier(.4, 0, .2, 1) forwards;
+}
+.fx-intro-car-glow {
+    position: absolute; inset: -22px; z-index: -1; border-radius: 24px;
+    background: radial-gradient(closest-side, rgba(212, 175, 55, .55), rgba(199, 150, 44, .25) 60%, transparent 80%);
+    filter: blur(18px);
+    animation: fx-intro-glow-pulse 1.6s ease-in-out infinite;
+}
+.fx-intro-car-photo {
+    width: 100%; height: 150px; object-fit: cover; display: block;
+    border-radius: 16px; border: 1px solid rgba(212, 175, 55, .55);
+    box-shadow: 0 0 0 1px rgba(212, 175, 55, .2), 0 0 30px rgba(212, 175, 55, .45), 0 0 60px rgba(199, 150, 44, .35);
+}
+.fx-intro-car-svg { width: 100%; height: auto; display: block; fill: var(--sun); filter: drop-shadow(0 0 14px rgba(212, 175, 55, .6)); }
+@keyframes fx-intro-drive {
+    0% { left: -30%; opacity: 0; }
+    12% { opacity: 1; }
+    78% { opacity: 1; }
+    100% { left: 110%; opacity: 0; }
+}
+@keyframes fx-intro-glow-pulse {
+    0%, 100% { opacity: .7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.06); }
+}
+
+.fx-intro-logo {
+    position: relative; z-index: 1; width: 76px; height: 76px; border-radius: 50%;
+    opacity: 0; transform: scale(.8);
+    box-shadow: 0 0 0 1px rgba(212, 175, 55, .5), 0 0 24px rgba(212, 175, 55, .55), 0 0 50px rgba(199, 150, 44, .4);
+    animation: fx-intro-logo-in .4s ease forwards;
+    animation-delay: .75s;
+}
+.fx-intro-logo-text {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--navy-deep); color: var(--sun); border: 2px solid var(--neon-cyan);
+    font-family: var(--font-display); font-weight: 700; font-size: 1rem;
+}
+@keyframes fx-intro-logo-in { to { opacity: 1; transform: scale(1); } }
+
+.fx-intro-skip {
+    position: absolute; z-index: 2; bottom: 22px; right: 22px;
+    background: rgba(212, 175, 55, .08); border: 1px solid rgba(212, 175, 55, .4);
+    color: #eafffe; padding: 6px 16px; border-radius: 100px; font-size: .8rem; cursor: pointer;
+    transition: background-color .15s ease, box-shadow .15s ease;
+}
+.fx-intro-skip:hover { background: rgba(212, 175, 55, .16); box-shadow: 0 0 16px rgba(212, 175, 55, .35); }
+
+@media (prefers-reduced-motion: reduce) {
+    .fx-intro-overlay { display: none !important; }
+}
+
+/* ==========================================================================
+   Night theme: Bootstrap component patches
+   Bootstrap's own CSS (forms, tables, pagination) hardcodes a white/light
+   theme and doesn't know about our --bg/--surface/--text tokens, so it
+   needs explicit dark variants here. Everything elsewhere on the site
+   already reads those tokens directly and adapts on its own.
+   ========================================================================== */
+
+[data-theme="night"] .form-control,
+[data-theme="night"] .form-select,
+[data-theme="night"] textarea.form-control {
+    background-color: var(--surface); color: var(--text); border-color: var(--line);
+}
+[data-theme="night"] .form-control::placeholder { color: var(--muted); }
+[data-theme="night"] .form-control:disabled,
+[data-theme="night"] .form-select:disabled { background-color: var(--surface-2); color: var(--muted); }
+[data-theme="night"] .fx-field > label { background: var(--surface); }
+[data-theme="night"] .form-check-label,
+[data-theme="night"] .form-label,
+[data-theme="night"] label { color: var(--text); }
+
+/* Bootstrap's .text-muted is a fixed grey (#6c757d !important) unrelated
+   to our --muted token, used in 70+ places across the site (auth pages,
+   admin tables, dashboards), so left alone it reads as near-invisible
+   dark-grey-on-near-black at night. */
+[data-theme="night"] .text-muted { color: var(--muted) !important; }
+
+[data-theme="night"] .card { background-color: var(--surface); border-color: var(--line); }
+[data-theme="night"] .table { color: var(--text); border-color: var(--line); }
+[data-theme="night"] .table thead th { background: var(--surface-2); color: var(--muted); border-color: var(--line); }
+[data-theme="night"] .table td, [data-theme="night"] .table th { border-color: var(--line); }
+[data-theme="night"] .table-hover tbody tr:hover { background: rgba(255, 255, 255, .05); color: var(--text); }
+[data-theme="night"] .fx-table-card { background: var(--surface); border-color: var(--line); }
+
+[data-theme="night"] .page-link { background-color: var(--surface); border-color: var(--line); color: var(--text); }
+[data-theme="night"] .page-link:hover { background-color: var(--surface-2); color: var(--text); }
+[data-theme="night"] .page-item.active .page-link { background-color: var(--gold); border-color: var(--gold); color: #fff; }
+[data-theme="night"] .page-item.disabled .page-link { background-color: var(--surface); color: var(--muted); }
+
+[data-theme="night"] .alert-success { background: rgba(28, 138, 84, .15); border-color: rgba(28, 138, 84, .35); color: #86EFAC; }
+[data-theme="night"] .alert-danger { background: rgba(194, 59, 59, .15); border-color: rgba(194, 59, 59, .35); color: #FCA5A5; }
+[data-theme="night"] .alert-warning { background: rgba(217, 142, 43, .15); border-color: rgba(217, 142, 43, .35); color: #FCD34D; }
+[data-theme="night"] .alert-secondary { background: rgba(255, 255, 255, .06); border-color: var(--line); color: var(--text); }
+[data-theme="night"] .fx-verify-banner { background: rgba(217, 142, 43, .15); color: #FCD34D; border-color: rgba(217, 142, 43, .3); }
+
+[data-theme="night"] .fx-empty-state { background: var(--surface-2); border-color: var(--line); }
+[data-theme="night"] .fx-skeleton-img, [data-theme="night"] .fx-skeleton-line { background: linear-gradient(90deg, var(--surface-2) 25%, #223055 37%, var(--surface-2) 63%); background-size: 400% 100%; }
+
+/* A handful of badges/avatars keep a fixed --navy fill for brand
+   consistency across themes; a thin light border keeps them from
+   blending into an equally-dark night page. */
+[data-theme="night"] .fx-admin-identity-avatar,
+[data-theme="night"] .step-pin.is-active .marker,
+[data-theme="night"] .fx-chip.is-active {
+    border-color: rgba(255, 255, 255, .18);
+}
+
+/* ==========================================================================
+   Reduced motion
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+        scroll-behavior: auto !important;
+    }
+    .vehicle-card:hover, .btn:hover { transform: none !important; }
+    .fx-reveal { opacity: 1 !important; transform: none !important; }
+}
